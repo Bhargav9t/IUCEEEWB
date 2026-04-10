@@ -136,6 +136,23 @@ export default function Footer() {
                 </div>
               </li>
 
+              {/* Current Vice-President */}
+              <li>
+                <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-emerald-600 dark:text-emerald-400 mb-1">Current Vice-President</p>
+                <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-tight mb-1">Kanishka Chitturi</p>
+                <div className="flex flex-col gap-1">
+                  <a
+                    href="https://www.linkedin.com/in/kanishka-chitturi-03482a351/"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-[#0A66C2] dark:text-zinc-400 dark:hover:text-[#0A66C2] transition-colors"
+                  >
+                    <Linkedin size={11} />
+                    LinkedIn Profile
+                  </a>
+                </div>
+              </li>
+
               {/* Assistant Dean */}
               <li>
                 <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-emerald-600 dark:text-emerald-400 mb-1">Assistant Dean IIIC</p>
