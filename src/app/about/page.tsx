@@ -3,7 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { Briefcase, Users, Zap, ArrowRight } from "lucide-react";
-import PerspectiveGrid from "@/components/PerspectiveGrid";
+import FlatGrid from "@/components/FlatGrid";
 import { TestimonialsCard } from "@/components/ui/testimonials-card";
 const ABOUT_TESTIMONIALS = [
   {
@@ -81,7 +81,7 @@ function Label({ children }: { children: React.ReactNode }) {
 export default function AboutPage() {
   return (
     <div className="min-h-screen bg-white text-zinc-900 overflow-x-hidden relative dark:bg-[#050505] dark:text-zinc-50">
-      <PerspectiveGrid className="fixed z-0 dark:opacity-30" />
+      <FlatGrid className="fixed z-0 opacity-60 dark:opacity-30" />
 
       {/* ── PAGE HEADER ──────────────────────────────────────────────── */}
       <section className="relative pt-40 pb-28 overflow-hidden border-b border-zinc-100">

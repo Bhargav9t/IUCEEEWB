@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException, Header
 from sqlalchemy.orm import Session
 from typing import List
-from datetime import datetime
+from datetime import datetime, timezone
 from app.database import get_db
 from app.models.events import Event as EventModel
 from app.schemas.events import Event, EventCreate
@@ -29,7 +29,7 @@ def create_event(
 def read_events(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return (
         db.query(EventModel)
-        .filter(EventModel.date >= datetime.utcnow())
+        .filter(EventModel.date >= datetime.now(timezone.utc))
         .order_by(EventModel.date.asc())
         .offset(skip)
         .limit(limit)

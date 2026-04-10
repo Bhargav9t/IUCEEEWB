@@ -4,7 +4,7 @@ import { useRef, useEffect, useState } from "react";
 import Link from "next/link";
 import { ArrowRight } from "lucide-react";
 import CoreTeamCarousel from "@/components/CoreTeamCarousel";
-import PerspectiveGrid from "@/components/PerspectiveGrid";
+import HeroGrid from "@/components/HeroGrid";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -30,11 +30,11 @@ function Label({ children }: { children: React.ReactNode }) {
 export default function TeamPage() {
   return (
     <div className="min-h-screen bg-white text-zinc-900 overflow-x-hidden relative dark:bg-[#050505] dark:text-zinc-50">
-      <PerspectiveGrid className="fixed z-0 dark:opacity-30" />
 
       {/* ── PAGE HEADER ──────────────────────────────────────────────── */}
-      <section className="relative pt-40 pb-28 overflow-hidden border-b border-zinc-100">
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_70%_50%_at_50%_0%,rgba(30,86,49,0.06),transparent)] pointer-events-none" />
+      <section className="relative pt-40 pb-28 overflow-hidden border-b border-zinc-100 dark:border-white/[0.06]">
+        {/* Interactive flat grid — replaces old gradient bg */}
+        <HeroGrid className="z-0" />
         <div className="container mx-auto px-6 max-w-4xl relative z-10">
           <Reveal>
             <Label>The people</Label>

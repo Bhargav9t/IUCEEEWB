@@ -10,15 +10,11 @@
       "Node Connectivity: Programmed the ESP32 to publish localized telemetry to an MQTT broker.",
       "Grid Integration Simulator: Connecting multiple nodes together to simulate dynamic power diversion."
     ],
-    "tech": [
-      "ESP32",
-      "C++",
-      "IoT",
-      "FreeRTOS"
-    ],
+    "tech": ["ESP32", "C++", "IoT", "FreeRTOS"],
     "progress": 67,
     "category": "Sustainability",
-    "status": "In Progress"
+    "status": "In Progress",
+    "isActive": true
   },
   {
     "id": "drone-aqi",
@@ -32,36 +28,30 @@
       "Automated Survey Flights: Autonomous way-point surveying over industrial boundaries.",
       "3D Topographic Modeling: Translating telemetry logs into a live dashboard mesh."
     ],
-    "tech": [
-      "Python",
-      "Pixhawk",
-      "MAVLink",
-      "ROS"
-    ],
+    "tech": ["Python", "Pixhawk", "MAVLink", "ROS"],
     "progress": 75,
     "category": "AI",
-    "status": "In Progress"
+    "status": "In Progress",
+    "isActive": true
   },
   {
-    "id": "audio-guidance",
-    "title": "Audio Guidance for Visually Impaired",
-    "shortDescription": "Smart Glasses featuring YOLO spatial detection and <200ms low-latency audio feedback.",
-    "problem": "Traditional walking canes only detect objects immediately on the ground constraint to arm's length, failing to warn users of overhead obstacles or distant approaching hazards.",
-    "solution": "A wearable 'Smart Glasses' frame computing depth and object recognition live, conveying spatial coordinates directly as spatial audio pings to the user via bone-conduction.",
+    "id": "glasses-visually-impaired",
+    "title": "Glasses for Visually Impaired",
+    "shortDescription": "AI-powered smart glasses with real-time obstacle detection and spatial audio feedback for the visually impaired.",
+    "problem": "Traditional walking canes only detect objects at ground level within arm's reach, failing to warn users of overhead obstacles, approaching vehicles, or hazards at chest height. Visually impaired individuals face significant daily navigation challenges in dynamic environments.",
+    "solution": "A wearable smart glasses frame with an embedded depth camera and edge-computing module that performs live object and obstacle recognition, conveying spatial positions as intuitive audio cues through bone-conduction speakers — leaving the ears open to natural sounds.",
     "howItWorks": [
-      "Machine Learning Pipeline: Compressed YOLOv8 execution to hit 30FPS on edge computing.",
-      "Hardware Miniaturization: Designed a custom PCB allowing the rig to fit within a standard sunglass arm.",
-      "Clinical Trials: Partnering with local NGOs for real-world usability testing."
+      "Edge ML Pipeline: Compressed YOLOv8 model deployed on Raspberry Pi achieving 30FPS object detection.",
+      "Depth Mapping: Stereoscopic camera fusion to calculate precise obstacle distance and direction.",
+      "Spatial Audio Engine: Translating obstacle coordinates into directional audio cues via bone-conduction.",
+      "Hardware Miniaturization: Custom PCB designed to fit all electronics within a standard glasses arm profile.",
+      "Clinical Trials: Partnering with local NGOs for real-world usability testing with visually impaired users."
     ],
-    "tech": [
-      "Raspberry Pi",
-      "OpenCV",
-      "YOLOv8",
-      "Python"
-    ],
+    "tech": ["Raspberry Pi", "OpenCV", "YOLOv8", "Python"],
     "progress": 67,
     "category": "AI",
-    "status": "In Progress"
+    "status": "In Progress",
+    "isActive": true
   },
   {
     "id": "sign-language",
@@ -74,15 +64,30 @@
       "Model Training: Gathering gesture datasets for 50 common ASL words.",
       "Mobile App V1: Deploying the vocalizer text-to-speech companion app."
     ],
-    "tech": [
-      "Arduino",
-      "ML",
-      "Python",
-      "React Native"
-    ],
+    "tech": ["Arduino", "ML", "Python", "React Native"],
     "progress": 67,
     "category": "AI",
-    "status": "In Progress"
+    "status": "In Progress",
+    "isActive": true
+  },
+  {
+    "id": "smart-waste-management-system",
+    "title": "Smart Waste Management",
+    "shortDescription": "IoT-enabled smart bins with automated segregation, fill-level monitoring, and optimized collection routing.",
+    "problem": "Poor waste segregation at source leads to recyclable materials contaminating landfills. Municipal garbage trucks operate on fixed schedules regardless of bin fill-levels, burning fuel on empty bins while overflowing ones create public health hazards.",
+    "solution": "A network of embedded smart bins fitted with ultrasonic fill sensors, weight gauges, and IR-based material classifiers. Bin data streams to a central dashboard that dynamically routes collection trucks only to bins above threshold fill levels, cutting collection trips by an estimated 35%.",
+    "howItWorks": [
+      "Sensor Integration: Ultrasonic fill-level sensors and IR material classifiers embedded in bin lids.",
+      "Wireless Mesh: ESP32 nodes transmitting bin telemetry via LoRa to a central gateway.",
+      "Collection Optimizer: Python algorithm dynamically generating optimal truck routes from live bin data.",
+      "Dashboard: Real-time Node-RED web interface for municipal waste management staff.",
+      "Field Testing: Pilot deployment on HITAM campus with 6 prototype bins."
+    ],
+    "tech": ["ESP32", "LoRa", "Python", "Node-RED"],
+    "progress": 45,
+    "category": "Sustainability",
+    "status": "In Progress",
+    "isActive": true
   },
   {
     "id": "water-monitoring",
@@ -95,20 +100,16 @@
       "Sensor Calibration: Calibrating analog pH readings against chemical buffer solutions.",
       "Dashboard Telemetry: Building a Node-RED interface for campus maintenance crews."
     ],
-    "tech": [
-      "ESP8266",
-      "Node-RED",
-      "C++",
-      "IoT"
-    ],
+    "tech": ["ESP8266", "Node-RED", "C++", "IoT"],
     "progress": 100,
     "category": "Sustainability",
-    "status": "Deployed"
+    "status": "Deployed",
+    "isActive": false
   },
   {
     "id": "food-redistribution-platform",
     "title": "Food Redistribution Platform",
-    "shortDescription": "A mobile/web platform connecting food donors (restaurants, households) with NGOs and individuals. Reduces food waste and hunger.",
+    "shortDescription": "A mobile/web platform connecting food donors (restaurants, households) with NGOs and individuals.",
     "problem": "Large quantities of food are wasted daily while many people lack access to meals.",
     "solution": "A mobile/web platform connecting food donors (restaurants, households) with NGOs and individuals.",
     "howItWorks": [
@@ -116,15 +117,11 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "React Native",
-      "Flutter  Node.js",
-      "Firebase  MongoDB",
-      "Firestore"
-    ],
+    "tech": ["React Native", "Flutter", "Node.js", "Firebase"],
     "progress": 33,
     "category": "Software",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "government-schemes-awareness-app",
@@ -137,18 +134,16 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "React",
-      "MongoDB"
-    ],
+    "tech": ["React", "MongoDB"],
     "progress": 33,
     "category": "Software",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "civic-issue-reporting-platform-civic360",
     "title": "Civic Issue Reporting Platform (Civic360)",
-    "shortDescription": "App for reporting issues with location and images. Improves governance.",
+    "shortDescription": "App for reporting civic issues with location and images. Improves governance.",
     "problem": "Civic issues go unreported or unresolved.",
     "solution": "App for reporting issues with location and images.",
     "howItWorks": [
@@ -156,19 +151,16 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Flutter",
-      "Firebase",
-      "Maps API"
-    ],
+    "tech": ["Flutter", "Firebase", "Maps API"],
     "progress": 33,
     "category": "Software",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "digital-literacy-training-platform",
     "title": "Digital Literacy Training Platform",
-    "shortDescription": "Educational platform with tutorials and quizzes. Bridges digital gap.",
+    "shortDescription": "Educational platform with tutorials and quizzes. Bridges the digital divide.",
     "problem": "Digital divide in rural/elderly populations.",
     "solution": "Educational platform with tutorials and quizzes.",
     "howItWorks": [
@@ -176,13 +168,11 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "mental-health-support-app",
@@ -195,18 +185,16 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Dialogflow",
-      "Rasa"
-    ],
+    "tech": ["Dialogflow", "Rasa"],
     "progress": 33,
     "category": "AI",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "water-supply-information-app",
     "title": "Water Supply Information App",
-    "shortDescription": "Real-time water updates app. Improves water access.",
+    "shortDescription": "Real-time water supply updates app. Improves water access awareness.",
     "problem": "Irregular water supply information.",
     "solution": "Real-time water updates app.",
     "howItWorks": [
@@ -214,37 +202,33 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "farmer-to-consumer-marketplace",
     "title": "Farmer-to-Consumer Marketplace",
-    "shortDescription": "Direct marketplace. Boosts farmer income.",
+    "shortDescription": "Direct marketplace connecting farmers to consumers. Boosts farmer income.",
     "problem": "Middlemen reduce farmer profits.",
-    "solution": "Direct marketplace.",
+    "solution": "Direct marketplace connecting farmers and consumers.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "ai-crop-disease-detection",
     "title": "AI Crop Disease Detection",
-    "shortDescription": "AI model for disease detection via images. Improves agriculture productivity.",
+    "shortDescription": "AI model for crop disease detection via smartphone images. Improves agriculture productivity.",
     "problem": "Late detection reduces crop yield.",
     "solution": "AI model for disease detection via images.",
     "howItWorks": [
@@ -252,56 +236,33 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "TensorFlow",
-      "Mobile app"
-    ],
+    "tech": ["TensorFlow", "Mobile App"],
     "progress": 33,
     "category": "AI",
-    "status": "Prototype"
-  },
-  {
-    "id": "smart-waste-management-system",
-    "title": "Smart Waste Management System",
-    "shortDescription": "IoT-enabled smart bins. Promotes recycling.",
-    "problem": "Poor waste segregation.",
-    "solution": "IoT-enabled smart bins.",
-    "howItWorks": [
-      "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
-      "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
-      "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
-    ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
-    "progress": 33,
-    "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "smart-parking-system",
     "title": "Smart Parking System",
-    "shortDescription": "IoT parking detection. Reduces congestion.",
-    "problem": "Traffic due to parking search.",
+    "shortDescription": "IoT-based parking slot detection. Reduces traffic congestion.",
+    "problem": "Traffic congestion due to parking search.",
     "solution": "IoT parking detection.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "youth-engagement-platform",
     "title": "Youth Engagement Platform",
-    "shortDescription": "Gamified engagement platform. Encourages participation.",
+    "shortDescription": "Gamified civic engagement platform. Encourages youth participation.",
     "problem": "Low youth participation in civic activities.",
     "solution": "Gamified engagement platform.",
     "howItWorks": [
@@ -309,145 +270,129 @@
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "plastic-waste-to-fuel-pavement",
     "title": "Plastic Waste to Fuel/Pavement",
-    "shortDescription": "Machine converting plastic to usable materials. Environmental sustainability.",
-    "problem": "Plastic pollution.",
+    "shortDescription": "Machine converting plastic waste to usable fuel or pavement material.",
+    "problem": "Plastic pollution degrading environmental quality.",
     "solution": "Machine converting plastic to usable materials.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "soil-testing-system",
     "title": "Soil Testing System",
-    "shortDescription": "Sensor-based soil analysis. Better crop yield.",
-    "problem": "Improper fertilizer use.",
+    "shortDescription": "Sensor-based automated soil analysis for precision agriculture.",
+    "problem": "Improper fertilizer use due to lack of soil data.",
     "solution": "Sensor-based soil analysis.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "low-cost-water-purification-system",
     "title": "Low-Cost Water Purification System",
-    "shortDescription": "Affordable filtration system. Improves health.",
-    "problem": "Unsafe drinking water.",
+    "shortDescription": "Affordable multi-stage filtration system for rural communities.",
+    "problem": "Unsafe drinking water in rural areas.",
     "solution": "Affordable filtration system.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "air-quality-monitoring-system",
     "title": "Air Quality Monitoring System",
-    "shortDescription": "IoT-based AQI monitoring. Health awareness.",
-    "problem": "Air pollution awareness.",
+    "shortDescription": "IoT-based AQI monitoring network. Raises health awareness.",
+    "problem": "Lack of localised air pollution awareness.",
     "solution": "IoT-based AQI monitoring.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "smart-traffic-management-system",
     "title": "Smart Traffic Management System",
-    "shortDescription": "AI-based traffic optimization. Efficient transport.",
-    "problem": "Traffic congestion.",
+    "shortDescription": "AI-based adaptive traffic signal optimization. Reduces urban congestion.",
+    "problem": "Traffic congestion in urban intersections.",
     "solution": "AI-based traffic optimization.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "IoT",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "rainwater-harvesting-system",
     "title": "Rainwater Harvesting System",
-    "shortDescription": "Rainwater collection system. Sustainable water use.",
-    "problem": "Water scarcity.",
+    "shortDescription": "Automated rainwater collection and distribution system.",
+    "problem": "Water scarcity in semi-arid regions.",
     "solution": "Rainwater collection system.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   },
   {
     "id": "energy-efficient-street-lighting",
     "title": "Energy-Efficient Street Lighting",
-    "shortDescription": "Smart lighting using sensors. Energy savings.",
-    "problem": "Energy waste.",
+    "shortDescription": "Motion and ambient-light sensor driven smart street lighting.",
+    "problem": "Continuous energy waste from unmanaged street lighting.",
     "solution": "Smart lighting using sensors.",
     "howItWorks": [
       "Problem Research & Scoping: Identifying the core issue and surveying the target demographic for potential solutions.",
       "Prototyping & Development: Building the initial version or minimal viable product to test core hypotheses.",
       "Field Testing & Deployment: Rolling out the solution to real users and tracking measurable impact."
     ],
-    "tech": [
-      "Web",
-      "IoT"
-    ],
+    "tech": ["Web", "IoT"],
     "progress": 33,
     "category": "Sustainability",
-    "status": "Prototype"
+    "status": "Prototype",
+    "isActive": false
   }
 ]
