@@ -141,6 +141,10 @@ export default function Footer() {
                 <p className="text-[10px] uppercase tracking-[0.15em] font-bold text-emerald-600 dark:text-emerald-400 mb-1">Current Vice-President</p>
                 <p className="text-sm font-semibold text-zinc-900 dark:text-white leading-tight mb-1">Kanishka Chitturi</p>
                 <div className="flex flex-col gap-1">
+                  <a href="tel:+919494753922" className="inline-flex items-center gap-1.5 text-xs text-zinc-500 hover:text-emerald-600 dark:text-zinc-400 dark:hover:text-emerald-400 transition-colors">
+                    <Phone size={11} />
+                    +91 94947 53922
+                  </a>
                   <a
                     href="https://www.linkedin.com/in/kanishka-chitturi-03482a351/"
                     target="_blank"
