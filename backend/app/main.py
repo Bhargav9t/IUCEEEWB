@@ -16,11 +16,8 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — allow the local Next.js dev server and add your production domain here
-origins = [
-    settings.frontend_url,
-    # "https://your-production-domain.com",
-]
+# CORS — reads from FRONTEND_URLS env var (comma-separated list of allowed origins)
+origins = settings.allowed_origins
 
 app.add_middleware(
     CORSMiddleware,
