@@ -38,7 +38,7 @@ export default function HistoryPage() {
             <Label>Since 2019</Label>
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-black tracking-[-0.03em] text-zinc-900 leading-tight mb-8 dark:text-white">
               Our{" "}
-              <span className="text-emerald-600">History</span>
+              <span className="text-emerald-600">Journey</span>
             </h1>
             <p className="text-lg md:text-xl text-zinc-400 leading-relaxed max-w-xl font-light">
               A timeline of milestones, projects, and events that have shaped IUCEE-EWB HITAM since we were founded.

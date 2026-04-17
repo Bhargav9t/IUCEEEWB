@@ -39,7 +39,7 @@ export default function Navbar() {
     { href: "/team",    label: "Our Team" },
     { href: "/events",  label: "Upcoming Events" },
     { href: "/projects", label: "Projects" },
-    { href: "/history", label: "Our History" },
+    { href: "/history", label: "Our Journey" },
   ];
 
   return (
@@ -51,25 +51,31 @@ export default function Navbar() {
       >
         <div 
           className={`
-            pointer-events-auto flex items-center justify-between transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]
+            pointer-events-auto flex items-center justify-between transition-all duration-300 ease-[cubic-bezier(0.25,1,0.5,1)]
             ${isScrolled 
-              ? "w-[98%] md:w-[95%] lg:max-w-[70rem] h-[72px] mt-4 bg-white/60 backdrop-blur-xl border border-zinc-200/50 rounded-full shadow-[0_8px_32px_rgba(0,0,0,0.05)] px-6 dark:bg-black/60 dark:border-white/10 dark:shadow-black/20" 
-              : "w-full h-28 bg-white/30 backdrop-blur-md border-b border-zinc-200/50 px-6 md:px-12 dark:bg-black/20 dark:border-white/10"
+              ? "w-[98%] md:w-[95%] lg:max-w-[64rem] h-[60px] mt-4 bg-emerald-500/[0.06] dark:bg-emerald-500/10 backdrop-blur-md border border-black/[0.05] dark:border-white/[0.08] rounded-full shadow-md px-6" 
+              : "w-full h-20 bg-emerald-500/[0.04] dark:bg-emerald-500/[0.08] backdrop-blur-md border-b border-black/[0.05] dark:border-white/[0.08] px-6 md:px-12"
             }
           `}
         >
           {/* Logo Section */}
-          <Link href="/" className="flex items-center gap-3.5 group z-20 shrink-0">
-            <div className={`relative overflow-hidden rounded-full border-2 border-transparent group-hover:border-emerald-500/50 ring-2 ring-zinc-200 dark:ring-white/10 transition-all duration-300 shadow-sm bg-white ${isScrolled ? "w-11 h-11" : "w-14 h-14"}`}>
+          <Link href="/" className="flex items-center gap-3 group z-20 shrink-0 relative">
+            {/* Soft radial gradient behind the entire logo area for primary focus */}
+            <div className="absolute top-1/2 left-8 -translate-y-1/2 w-32 h-16 bg-[radial-gradient(circle_at_center,theme(colors.emerald.500/0.10),transparent_70%)] dark:bg-[radial-gradient(circle_at_center,theme(colors.emerald.400/0.20),transparent_70%)] blur-md pointer-events-none opacity-80 group-hover:opacity-100 transition-opacity duration-300" />
+            
+            {/* Left Logo (Secondary/Supporting Identity) */}
+            <div className={`relative shrink-0 overflow-hidden rounded-full transition-all duration-300 bg-white opacity-80 grayscale-[30%] group-hover:grayscale-[10%] group-hover:opacity-90 ${isScrolled ? "w-8 h-8" : "w-10 h-10"}`}>
               <Image 
-                src="/images/logos/LOGO.jpg" 
+                src="/images/logos/IUCEEEWBHITAM.webp" 
                 alt="IUCEE EWB HITAM Logo" 
                 fill 
                 className="object-cover"
-                sizes="56px"
+                sizes="40px"
               />
             </div>
-            <span className="font-extrabold text-zinc-900 tracking-tight drop-shadow-sm group-hover:text-emerald-600 transition-colors text-sm sm:text-xl dark:text-white pb-0.5">
+            
+            {/* Right Logo (Primary Focus) */}
+            <span className={`relative z-10 font-black origin-left tracking-tight transition-all duration-300 scale-105 group-hover:scale-[1.08] drop-shadow-[0_0_6px_rgba(16,185,129,0.15)] dark:drop-shadow-[0_0_10px_rgba(52,211,153,0.3)] text-zinc-900 dark:text-white group-hover:text-emerald-700 dark:group-hover:text-emerald-400 pb-0.5 ${isScrolled ? "text-sm sm:text-[15px]" : "text-sm sm:text-[1.1rem]"}`}>
               IUCEE EWB HITAM
             </span>
           </Link>
@@ -83,8 +89,8 @@ export default function Navbar() {
                   key={link.href}
                   href={link.href}
                   className={`
-                    relative px-4 py-2 text-sm font-semibold rounded-full flex items-center transition-colors duration-300
-                    ${isActive ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-500 hover:text-zinc-900 dark:hover:text-white dark:text-zinc-400"}
+                    relative px-4 py-1.5 text-[13px] rounded-full flex items-center transition-all duration-300 ease-out
+                    ${isActive ? "font-bold text-emerald-700 dark:text-emerald-400" : "font-semibold opacity-80 text-zinc-800 dark:text-zinc-200 hover:opacity-100 hover:-translate-y-[1px]"}
                   `}
                 >
                   {isActive && (
@@ -146,8 +152,8 @@ export default function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    className={`block text-3xl font-bold py-4 border-b border-zinc-100 transition-colors ${
-                      pathname === link.href ? "text-emerald-600" : "text-zinc-500 hover:text-zinc-900"
+                    className={`block text-3xl font-bold py-4 border-b border-zinc-100 dark:border-white/10 transition-colors ${
+                      pathname === link.href ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white"
                     }`}
                   >
                     {link.label}

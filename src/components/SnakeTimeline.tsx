@@ -1,11 +1,12 @@
 "use client";
 
 import React, { useEffect, useState } from "react";
-import { motion } from "framer-motion";
+import { createPortal } from "react-dom";
+import { motion, AnimatePresence } from "framer-motion";
 import { 
   Flag, Zap, Factory, Code, BookOpen, Rocket, FileText, 
   Lightbulb, Upload, Brain, School, Leaf, Globe, 
-  Wrench, Trophy, Sprout, Medal, Cpu, Droplets, PartyPopper, Hourglass, Users
+  Wrench, Trophy, Sprout, Medal, Cpu, Droplets, PartyPopper, Hourglass, Users, X
 } from "lucide-react";
 import RightSideGrid from "./RightSideGrid";
 import { MaskedAvatars } from "@/components/ui/masked-avatars";
@@ -130,7 +131,14 @@ const timelineEvents = [
   {
     id: "20", date: "APR 10, 2026", title: "IGNITE 2026",
     desc: "Welcoming the incoming batch to the chapter.",
-    icon: PartyPopper
+    icon: PartyPopper,
+    image: "/images/events/Ignite.jpeg"
+  },
+  {
+    id: "22", date: "APR 15, 2026", title: "HELPING HEARTS NGO VISIT",
+    desc: "A visit to Helping Hearts NGO.",
+    icon: Users,
+    image: "/images/events/NGOvisit%231.jpeg"
   },
   {
     id: "21", date: "FUTURE", title: "TO BE CONTINUED...",
@@ -141,6 +149,7 @@ const timelineEvents = [
 
 export default function SnakeTimeline() {
   const [mounted, setMounted] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
     setMounted(true);
@@ -297,7 +306,7 @@ export default function SnakeTimeline() {
               // Cards alternate strictly by column to guarantee no vertical overlapping
               const align = col_idx % 2 === 0 ? "top" : "bottom";
               
-              const isCompleted = index < 21;
+              const isCompleted = index < timelineEvents.length - 1;
               const theme = isCompleted ? {
                  nodeBorder: "border-emerald-500 shadow-[0_0_15px_#10b981]",
                  nodeInner: "bg-emerald-300",
@@ -340,10 +349,13 @@ export default function SnakeTimeline() {
 
                      {/* Glassmorphism Data Card */}
                      <div 
-                       onClick={() => "link" in event && event.link && window.open((event as any).link, "_blank")}
+                       onClick={() => {
+                         if ("link" in event && event.link) window.open((event as any).link, "_blank");
+                         else if ("image" in event && event.image) setSelectedImage((event as any).image);
+                       }}
                        className={`absolute w-[260px] h-auto min-h-[160px] p-5 bg-white border border-zinc-200 rounded-2xl shadow-md transition-all duration-300 group-hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start z-40 origin-center left-1/2 -translate-x-1/2 ${
                          align === 'top' ? 'bottom-full mb-6' : 'top-full mt-6'
-                       } ${"link" in event && event.link ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+                       } ${("link" in event && event.link) || ("image" in event && event.image) ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
                      >
                         {/* Connection Tether */}
                         <div className={`absolute left-1/2 -translate-x-1/2 w-[2px] h-6 bg-gradient-to-b ${
@@ -380,7 +392,7 @@ export default function SnakeTimeline() {
 
           <div className="flex flex-col space-y-10 relative z-10 w-full">
                 {timelineEvents.map((event, index) => {
-                  const isCompleted = index < 21;
+                  const isCompleted = index < timelineEvents.length - 1;
                   const theme = isCompleted ? {
                      nodeBorder: "border-emerald-500 shadow-[0_0_15px_#10b981]",
                      nodeInner: "bg-emerald-300",
@@ -411,8 +423,11 @@ export default function SnakeTimeline() {
 
                       {/* Mobile Glass Card */}
                       <div 
-                        onClick={() => "link" in event && event.link && window.open((event as any).link, "_blank")}
-                        className={`p-6 bg-white border border-zinc-200 rounded-2xl shadow-md transition-transform duration-300 hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start w-full relative z-10 ${"link" in event && event.link ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+                        onClick={() => {
+                          if ("link" in event && event.link) window.open((event as any).link, "_blank");
+                          else if ("image" in event && event.image) setSelectedImage((event as any).image);
+                        }}
+                        className={`p-6 bg-white border border-zinc-200 rounded-2xl shadow-md transition-transform duration-300 hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start w-full relative z-10 ${("link" in event && event.link) || ("image" in event && event.image) ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
                       >
                           {event.id === "founder" && (
                             <div className="mb-4">
@@ -438,6 +453,55 @@ export default function SnakeTimeline() {
 
 
       </div>
+
+      {/* Image Modal Popup */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedImage && (
+          <>
+            {/* Backdrop */}
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => setSelectedImage(null)}
+              className="fixed inset-0 z-[100] bg-black/60 backdrop-blur-sm"
+            />
+
+            {/* Modal Dialog */}
+            <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 pointer-events-none">
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                className="pointer-events-auto relative max-w-4xl max-h-[85vh] bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+              >
+                {/* Header with Close Button */}
+                <div className="absolute top-4 right-4 z-10">
+                  <button
+                    onClick={() => setSelectedImage(null)}
+                    className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 hover:bg-black/40 text-white backdrop-blur-md transition-all focus:outline-none"
+                  >
+                    <X size={18} />
+                  </button>
+                </div>
+                
+                {/* Image Content */}
+                <div className="w-full h-full flex items-center justify-center overflow-hidden bg-zinc-100/50 dark:bg-black/50">
+                  <img 
+                    src={selectedImage} 
+                    alt="Event popup" 
+                    className="w-full max-h-[85vh] object-contain"
+                  />
+                </div>
+              </motion.div>
+            </div>
+          </>
+        )}
+      </AnimatePresence>,
+      document.body
+      )}
     </section>
   );
 }

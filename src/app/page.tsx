@@ -68,14 +68,14 @@ function FeatureCard({
   icon: React.ElementType;
 }) {
   return (
-    <div className="group relative rounded-2xl bg-zinc-50 border border-zinc-200 p-7 transition-all duration-300 hover:border-zinc-300 cursor-default dark:bg-[#0a0a0a] dark:border-white/10 dark:hover:border-emerald-500/30">
+    <div className="group relative h-full flex flex-col rounded-2xl bg-zinc-50 border border-zinc-200 p-7 transition-all duration-300 hover:border-zinc-300 cursor-default dark:bg-[#0a0a0a] dark:border-white/10 dark:hover:border-emerald-500/30">
       <div className="flex items-center gap-3 mb-4">
         <div className="w-8 h-8 rounded-lg bg-zinc-100 border border-zinc-200 flex items-center justify-center text-zinc-500 group-hover:text-emerald-600 transition-colors duration-300 shrink-0 dark:bg-white/5 dark:border-white/10 dark:text-zinc-400 dark:group-hover:text-emerald-400">
           <Icon size={15} strokeWidth={1.5} />
         </div>
         <h3 className="text-sm font-semibold text-zinc-900 tracking-tight dark:text-white">{title}</h3>
       </div>
-      <p className="text-sm text-zinc-500 leading-relaxed pl-11 dark:text-zinc-400">{description}</p>
+      <p className="text-sm text-zinc-500 leading-relaxed pl-11 dark:text-zinc-400 flex-1">{description}</p>
     </div>
   );
 }
@@ -321,9 +321,9 @@ export default function Home() {
             </h2>
           </Reveal>
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            <Reveal delay={60}><FeatureCard title="Durable hardware" description="Everything we build has to survive real conditions and keep running without us around to fix it constantly." icon={Leaf} /></Reveal>
-            <Reveal delay={130}><FeatureCard title="Community input first" description="We spend time with the people a project will affect before we write a single line of code or spec." icon={Users} /></Reveal>
-            <Reveal delay={200}><FeatureCard title="Student ownership" description="Teams own outcomes end-to-end — from initial scoping through field handoff. Advisors guide, students ship." icon={Lightbulb} /></Reveal>
+            <Reveal delay={60} className="h-full"><FeatureCard title="Durable hardware" description="Everything we build has to survive real conditions and keep running without us around to fix it constantly." icon={Leaf} /></Reveal>
+            <Reveal delay={130} className="h-full"><FeatureCard title="Community input first" description="We spend time with the people a project will affect before we write a single line of code or spec." icon={Users} /></Reveal>
+            <Reveal delay={200} className="h-full"><FeatureCard title="Student ownership" description="Teams own outcomes end-to-end — from initial scoping through field handoff. Advisors guide, students ship." icon={Lightbulb} /></Reveal>
           </div>
         </div>
       </section>

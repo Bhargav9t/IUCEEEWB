@@ -85,9 +85,7 @@ export default function FlatGrid({
     canvas.addEventListener("mousemove", onMouseMove);
     canvas.addEventListener("mouseleave", onMouseLeave);
 
-    const isDark = () =>
-      document.documentElement.classList.contains("dark") ||
-      window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const isDark = () => document.documentElement.classList.contains("dark");
 
     const draw = () => {
       ctx.clearRect(0, 0, W, H);
