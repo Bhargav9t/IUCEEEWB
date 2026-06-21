@@ -1,11 +1,11 @@
 "use client";
 
 import React, { useState } from "react";
-import InfiniteGallery from "@/components/InfiniteGallery";
+import CircularGallery from "@/components/CircularGallery";
 import FlatGrid from "@/components/FlatGrid";
-import { motion, AnimatePresence } from "framer-motion";
-import { X, ArrowLeft } from "lucide-react";
+import { ArrowLeft, X } from "lucide-react";
 import Link from "next/link";
+import { motion, AnimatePresence } from "framer-motion";
 
 export default function InvestitureCeremonyPage() {
     const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -45,6 +45,14 @@ export default function InvestitureCeremonyPage() {
         "/images/SnakeTimelineNodes/InvestitureCeremony/Pic3.jpg"
     ];
 
+    const galleryItems = images.map((img) => {
+        const fileName = img.split('/').pop() || "";
+        const label = fileName.replace(/\.[^/.]+$/, "");
+        // Use Next.js built-in image optimization to compress and resize the high-resolution images
+        const optimizedUrl = `/_next/image?url=${encodeURIComponent(img)}&w=640&q=75`;
+        return { image: optimizedUrl, text: label, originalImage: img };
+    });
+
     return (
         <div className="relative w-full min-h-screen bg-zinc-50 dark:bg-[#050505] overflow-hidden flex flex-col justify-center items-center font-sans">
             {/* Top Navigation */}
@@ -55,17 +63,21 @@ export default function InvestitureCeremonyPage() {
                 </Link>
             </div>
 
-            {/* Overlay Text */}
-            <div className="absolute inset-0 flex flex-col items-center justify-center pointer-events-none z-10 p-4">
-                <h1 className="text-4xl md:text-7xl font-black text-zinc-900 dark:text-white uppercase tracking-tight text-center drop-shadow-sm mb-4">
-                    Investiture Ceremony
-                </h1>
-                <p className="text-zinc-600 dark:text-zinc-400 max-w-lg text-center text-sm md:text-base leading-relaxed drop-shadow-sm font-medium">
-                    Explore the gallery of our newly inducted core team members.
-                </p>
-                <p className="mt-4 text-xs font-bold tracking-[0.2em] text-emerald-500">
-                    CLICK ON ANY IMAGE TO VIEW
-                </p>
+            {/* Overlay Text - positioned top and bottom to prevent overlap with the circular gallery */}
+            <div className="absolute inset-0 flex flex-col items-center justify-between pointer-events-none z-10 p-8 md:p-12">
+                <div className="flex flex-col items-center mt-20 md:mt-24">
+                    <h1 className="text-4xl md:text-7xl font-black text-zinc-900 dark:text-white uppercase tracking-tight text-center drop-shadow-sm mb-4">
+                        Investiture Ceremony
+                    </h1>
+                    <p className="text-zinc-600 dark:text-zinc-400 max-w-lg text-center text-sm md:text-base leading-relaxed drop-shadow-sm font-medium">
+                        Explore the gallery of our newly inducted core team members.
+                    </p>
+                </div>
+                <div className="mb-8 md:mb-12">
+                    <p className="text-xs font-bold tracking-[0.2em] text-emerald-500">
+                        DRAG OR SCROLL TO NAVIGATE • CLICK ANY IMAGE TO EXPAND
+                    </p>
+                </div>
             </div>
             
             {/* Theme-adaptive background grid */}
@@ -73,16 +85,17 @@ export default function InvestitureCeremonyPage() {
                 <FlatGrid cols={24} rows={16} className="w-full h-full" />
             </div>
 
-            {/* The Infinite Gallery - slightly transparent so grid peeks through */}
-            <InfiniteGallery 
-                images={images} 
-                className="w-full h-screen absolute inset-0 z-0" 
-                visibleCount={14} 
-                onImageClick={(image) => {
-                    const src = typeof image === "string" ? image : image.src;
-                    setSelectedImage(src);
-                }}
-            />
+            {/* The Circular Gallery */}
+            <div className="w-full h-screen absolute inset-0 z-0">
+                <CircularGallery 
+                    items={galleryItems} 
+                    bend={3}
+                    textColor="#ffffff"
+                    borderRadius={0.05}
+                    scrollEase={0.02}
+                    onImageClick={(item: any) => setSelectedImage(item.originalImage)}
+                />
+            </div>
 
             {/* Image Popup Modal */}
             <AnimatePresence>

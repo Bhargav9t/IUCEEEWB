@@ -147,6 +147,18 @@ const timelineEvents = [
     image: "/images/events/NGOvisit%231.jpeg"
   },
   {
+    id: "24", date: "APR 20, 2026", title: "IASF ADDRESSAL EVENT",
+    desc: "Project addressal and validation event for the IUCEE Annual Student Forum projects.",
+    icon: Brain,
+    image: "/images/events/iasf-addressal.jpg",
+    link: "/iasf-addressal-event"
+  },
+  {
+    id: "23", date: "APR 25, 2026", title: "WILLIAM OAKES VISIT",
+    desc: "Interactive mentorship and project design review session by Dr. William Oakes from Purdue University.",
+    icon: School
+  },
+  {
     id: "21", date: "FUTURE", title: "TO BE CONTINUED...",
     desc: "Our journey of impact and innovation never stops.",
     icon: Hourglass
@@ -356,8 +368,14 @@ export default function SnakeTimeline() {
                      {/* Glassmorphism Data Card */}
                      <div 
                        onClick={() => {
-                         if ("link" in event && event.link) window.open((event as any).link, "_blank");
-                         else if ("image" in event && event.image) setSelectedImage((event as any).image);
+                          if ("link" in event && event.link) {
+                            if (event.link.startsWith("/")) {
+                              window.location.href = event.link;
+                            } else {
+                              window.open(event.link, "_blank");
+                            }
+                          }
+                          else if ("image" in event && event.image) setSelectedImage((event as any).image);
                        }}
                        className={`absolute w-[260px] h-auto min-h-[160px] p-5 bg-white border border-zinc-200 rounded-2xl shadow-md transition-all duration-300 group-hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start z-40 origin-center left-1/2 -translate-x-1/2 ${
                          align === 'top' ? 'bottom-full mb-6' : 'top-full mt-6'
@@ -430,7 +448,13 @@ export default function SnakeTimeline() {
                       {/* Mobile Glass Card */}
                       <div 
                         onClick={() => {
-                          if ("link" in event && event.link) window.open((event as any).link, "_blank");
+                          if ("link" in event && event.link) {
+                            if (event.link.startsWith("/")) {
+                              window.location.href = event.link;
+                            } else {
+                              window.open(event.link, "_blank");
+                            }
+                          }
                           else if ("image" in event && event.image) setSelectedImage((event as any).image);
                         }}
                         className={`p-6 bg-white border border-zinc-200 rounded-2xl shadow-md transition-transform duration-300 hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start w-full relative z-10 ${("link" in event && event.link) || ("image" in event && event.image) ? 'cursor-pointer hover:scale-[1.02]' : ''}`}

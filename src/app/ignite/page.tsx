@@ -2,11 +2,9 @@
 
 import React, { useState, useEffect, useMemo, useRef } from "react";
 import { motion, useTransform, useSpring, useMotionValue } from "framer-motion";
-
-// --- Utility ---
-// function cn(...inputs: ClassValue[]) {
-//     return twMerge(clsx(inputs));
-// }
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import IgniteMediaGrid from "@/components/IgniteMediaGrid";
 
 // --- Types ---
 export type AnimationPhase = "scatter" | "line" | "circle" | "bottom-strip";
@@ -81,7 +79,7 @@ function FlipCard({
                     style={{ backfaceVisibility: "hidden", transform: "rotateY(180deg)" }}
                 >
                     <div className="text-center">
-                        <p className="text-[8px] font-bold text-blue-400 uppercase tracking-widest mb-1">View</p>
+                        <p className="text-[8px] font-bold text-emerald-400 uppercase tracking-widest mb-1">View</p>
                         <p className="text-xs font-medium text-white">Details</p>
                     </div>
                 </div>
@@ -90,38 +88,38 @@ function FlipCard({
     );
 }
 
-// --- Main Hero Component ---
+// --- Main Hero Component Configuration ---
 const TOTAL_IMAGES = 20;
 const MAX_SCROLL = 3000; // Virtual scroll range
 
-// Unsplash Images
+// Local Ignite Images from public/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/
 const IMAGES = [
-    "https://images.unsplash.com/photo-1486406146926-c627a92ad1ab?w=300&q=80",
-    "https://images.unsplash.com/photo-1519710164239-da123dc03ef4?w=300&q=80",
-    "https://images.unsplash.com/photo-1497366216548-37526070297c?w=300&q=80",
-    "https://images.unsplash.com/photo-1506744038136-46273834b3fb?w=300&q=80",
-    "https://images.unsplash.com/photo-1470071459604-3b5ec3a7fe05?w=300&q=80",
-    "https://images.unsplash.com/photo-1506765515384-028b60a970df?w=300&q=80",
-    "https://images.unsplash.com/photo-1441974231531-c6227db76b6e?w=300&q=80",
-    "https://images.unsplash.com/photo-1472214103451-9374bd1c798e?w=300&q=80",
-    "https://images.unsplash.com/photo-1500485035595-cbe6f645feb1?w=300&q=80",
-    "https://images.unsplash.com/photo-1469474968028-56623f02e42e?w=300&q=80",
-    "https://images.unsplash.com/photo-1451187580459-43490279c0fa?w=300&q=80",
-    "https://images.unsplash.com/photo-1518020382113-a7e8fc38eac9?w=300&q=80",
-    "https://images.unsplash.com/photo-1465146344425-f00d5f5c8f07?w=300&q=80",
-    "https://images.unsplash.com/photo-1470252649378-9c29740c9fa8?w=300&q=80",
-    "https://images.unsplash.com/photo-1493246507139-91e8fad9978e?w=300&q=80",
-    "https://images.unsplash.com/photo-1494438639946-1ebd1d20bf85?w=300&q=80",
-    "https://images.unsplash.com/photo-1483729558449-99ef09a8c325?w=300&q=80",
-    "https://images.unsplash.com/photo-1518173946687-a4c8892bbd9f?w=300&q=80",
-    "https://images.unsplash.com/photo-1523961131990-5ea7c61b2107?w=300&q=80",
-    "https://images.unsplash.com/photo-1496568816309-51d7c20e3b21?w=300&q=80",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05765.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05766.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05773.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05774.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05775.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05776.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05777.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05779.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05781.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05784.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05785.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05786.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05806.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05807.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05810.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05811.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05828.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05851.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/C0100T01.JPG",
+    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/C0101T01.JPG"
 ];
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;
 
-export default function IntroAnimation() {
+export function IntroAnimation() {
     const [introPhase, setIntroPhase] = useState<AnimationPhase>("scatter");
     const [containerSize, setContainerSize] = useState({ width: 0, height: 0 });
     const containerRef = useRef<HTMLDivElement>(null);
@@ -160,12 +158,22 @@ export default function IntroAnimation() {
         if (!container) return;
 
         const handleWheel = (e: WheelEvent) => {
-            // Prevent default to stop browser overscroll/bounce
-            e.preventDefault();
+            const isScrollingDown = e.deltaY > 0;
+            const isScrollingUp = e.deltaY < 0;
 
-            const newScroll = Math.min(Math.max(scrollRef.current + e.deltaY, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
+            if (isScrollingDown && scrollRef.current < MAX_SCROLL) {
+                // Prevent browser standard scroll to advance 3D card layout first
+                e.preventDefault();
+                const newScroll = Math.min(scrollRef.current + e.deltaY, MAX_SCROLL);
+                scrollRef.current = newScroll;
+                virtualScroll.set(newScroll);
+            } else if (isScrollingUp && window.scrollY === 0 && scrollRef.current > 0) {
+                // Rewind 3D animation before letting user pull standard viewport up
+                e.preventDefault();
+                const newScroll = Math.max(scrollRef.current + e.deltaY, 0);
+                scrollRef.current = newScroll;
+                virtualScroll.set(newScroll);
+            }
         };
 
         // Touch support
@@ -178,12 +186,23 @@ export default function IntroAnimation() {
             const deltaY = touchStartY - touchY;
             touchStartY = touchY;
 
-            const newScroll = Math.min(Math.max(scrollRef.current + deltaY, 0), MAX_SCROLL);
-            scrollRef.current = newScroll;
-            virtualScroll.set(newScroll);
+            const isScrollingDown = deltaY > 0;
+            const isScrollingUp = deltaY < 0;
+
+            if (isScrollingDown && scrollRef.current < MAX_SCROLL) {
+                e.preventDefault();
+                const newScroll = Math.min(scrollRef.current + deltaY * 1.5, MAX_SCROLL);
+                scrollRef.current = newScroll;
+                virtualScroll.set(newScroll);
+            } else if (isScrollingUp && window.scrollY === 0 && scrollRef.current > 0) {
+                e.preventDefault();
+                const newScroll = Math.max(scrollRef.current + deltaY * 1.5, 0);
+                scrollRef.current = newScroll;
+                virtualScroll.set(newScroll);
+            }
         };
 
-        // Attach listeners to container instead of window for portability
+        // Attach listeners
         container.addEventListener("wheel", handleWheel, { passive: false });
         container.addEventListener("touchstart", handleTouchStart, { passive: false });
         container.addEventListener("touchmove", handleTouchMove, { passive: false });
@@ -196,12 +215,10 @@ export default function IntroAnimation() {
     }, [virtualScroll]);
 
     // 1. Morph Progress: 0 (Circle) -> 1 (Bottom Arc)
-    // Happens between scroll 0 and 600
     const morphProgress = useTransform(virtualScroll, [0, 600], [0, 1]);
     const smoothMorph = useSpring(morphProgress, { stiffness: 40, damping: 20 });
 
-    // 2. Scroll Rotation (Shuffling): Starts after morph (e.g., > 600)
-    // Rotates the bottom arc as user continues scrolling
+    // 2. Scroll Rotation
     const scrollRotate = useTransform(virtualScroll, [600, 3000], [0, 360]);
     const smoothScrollRotate = useSpring(scrollRotate, { stiffness: 40, damping: 20 });
 
@@ -219,7 +236,6 @@ export default function IntroAnimation() {
 
             // Normalize -1 to 1
             const normalizedX = (relativeX / rect.width) * 2 - 1;
-            // Move +/- 100px
             mouseX.set(normalizedX * 100);
         };
         container.addEventListener("mousemove", handleMouseMove);
@@ -244,7 +260,7 @@ export default function IntroAnimation() {
         }));
     }, []);
 
-    // --- Render Loop (Manual Calculation for Morph) ---
+    // --- Render Loop ---
     const [morphValue, setMorphValue] = useState(0);
     const [rotateValue, setRotateValue] = useState(0);
     const [parallaxValue, setParallaxValue] = useState(0);
@@ -261,128 +277,154 @@ export default function IntroAnimation() {
     }, [smoothMorph, smoothScrollRotate, smoothMouseX]);
 
     // --- Content Opacity ---
-    // Fade in content when arc is formed (morphValue > 0.8)
     const contentOpacity = useTransform(smoothMorph, [0.8, 1], [0, 1]);
     const contentY = useTransform(smoothMorph, [0.8, 1], [20, 0]);
 
     return (
-        <div ref={containerRef} className="relative w-full h-screen bg-[#FAFAFA] overflow-hidden dark:bg-[#050505]">
-            {/* Container */}
-            <div className="flex h-full w-full flex-col items-center justify-center perspective-1000">
+        <div ref={containerRef} className="relative w-full h-screen bg-[#FAFAFA] overflow-hidden dark:bg-[#050505] flex flex-col justify-center items-center">
+            {/* Top Navigation */}
+            <div className="absolute top-6 left-6 z-20">
+                <Link href="/" className="inline-flex items-center text-zinc-900 dark:text-zinc-300 hover:text-emerald-500 transition-colors font-medium text-sm bg-white/50 dark:bg-black/50 px-4 py-2 rounded-full backdrop-blur-md border border-zinc-200 dark:border-white/10 shadow-sm pointer-events-auto">
+                    <ArrowLeft size={16} className="mr-2" />
+                    Back to Timeline
+                </Link>
+            </div>
 
-                {/* Intro Text (Fades out) */}
-                <div className="absolute z-0 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-1/2">
-                    <motion.h1
-                        initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
-                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
-                        transition={{ duration: 1 }}
-                        className="text-2xl font-medium tracking-tight text-gray-800 dark:text-gray-200 md:text-4xl"
-                    >
-                        The future is built on AI.
-                    </motion.h1>
-                    <motion.p
-                        initial={{ opacity: 0 }}
-                        animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.5 - morphValue } : { opacity: 0 }}
-                        transition={{ duration: 1, delay: 0.2 }}
-                        className="mt-4 text-xs font-bold tracking-[0.2em] text-gray-500 dark:text-gray-400"
-                    >
-                        SCROLL TO EXPLORE
-                    </motion.p>
-                </div>
-
-                {/* Arc Active Content (Fades in) */}
-                <motion.div
-                    style={{ opacity: contentOpacity, y: contentY }}
-                    className="absolute top-[10%] z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4"
+            {/* Intro Text (Fades out) */}
+            <div className="absolute z-0 flex flex-col items-center justify-center text-center pointer-events-none top-1/2 -translate-y-1/2">
+                <motion.h1
+                    initial={{ opacity: 0, y: 20, filter: "blur(10px)" }}
+                    animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 1 - morphValue * 2, y: 0, filter: "blur(0px)" } : { opacity: 0, filter: "blur(10px)" }}
+                    transition={{ duration: 1 }}
+                    className="text-3xl font-black tracking-tight text-zinc-900 dark:text-white md:text-5xl uppercase"
                 >
-                    <h2 className="text-3xl md:text-5xl font-semibold text-gray-900 dark:text-gray-100 tracking-tight mb-4">
-                        Explore Our Vision
+                    Ignite <span className="text-emerald-500">2026</span>
+                </motion.h1>
+                <motion.p
+                    initial={{ opacity: 0 }}
+                    animate={introPhase === "circle" && morphValue < 0.5 ? { opacity: 0.7 - morphValue } : { opacity: 0 }}
+                    transition={{ duration: 1, delay: 0.2 }}
+                    className="mt-4 text-xs font-bold tracking-[0.25em] text-emerald-500"
+                >
+                    SCROLL DOWN TO EXPLORE
+                </motion.p>
+            </div>
+
+            {/* Arc Active Content (Fades in) */}
+            <motion.div
+                style={{ opacity: contentOpacity, y: contentY }}
+                className="absolute top-[12%] z-10 flex flex-col items-center justify-center text-center pointer-events-none px-4"
+            >
+                <h2 className="text-4xl md:text-6xl font-black text-zinc-900 dark:text-white tracking-tight mb-3 uppercase">
+                    Ignite 2026
+                </h2>
+                <p className="text-xs md:text-sm text-zinc-500 dark:text-zinc-400 max-w-lg leading-relaxed font-medium">
+                    Welcoming the incoming batch to the IUCEE-EWB HITAM student chapter. Experience the highlights, projects, and activities from the event.
+                </p>
+                <p className="mt-3 text-[10px] font-bold tracking-[0.25em] text-emerald-500 uppercase">
+                    Scroll Down for Media Gallery
+                </p>
+            </motion.div>
+
+            {/* Main 3D Card Container */}
+            <div className="relative flex items-center justify-center w-full h-full">
+                {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
+                    let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
+
+                    if (introPhase === "scatter") {
+                        target = scatterPositions[i];
+                    } else if (introPhase === "line") {
+                        const lineSpacing = 70;
+                        const lineTotalWidth = TOTAL_IMAGES * lineSpacing;
+                        const lineX = i * lineSpacing - lineTotalWidth / 2;
+                        target = { x: lineX, y: 0, rotation: 0, scale: 1, opacity: 1 };
+                    } else {
+                        const isMobile = containerSize.width < 768;
+                        const minDimension = Math.min(containerSize.width, containerSize.height);
+
+                        // Circle setup
+                        const circleRadius = Math.min(minDimension * 0.35, 350);
+                        const circleAngle = (i / TOTAL_IMAGES) * 360;
+                        const circleRad = (circleAngle * Math.PI) / 180;
+                        const circlePos = {
+                            x: Math.cos(circleRad) * circleRadius,
+                            y: Math.sin(circleRad) * circleRadius,
+                            rotation: circleAngle + 90,
+                        };
+
+                        // Bottom Arc setup
+                        const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
+                        const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
+                        const arcApexY = containerSize.height * (isMobile ? 0.35 : 0.25);
+                        const arcCenterY = arcApexY + arcRadius;
+
+                        const spreadAngle = isMobile ? 100 : 130;
+                        const startAngle = -90 - (spreadAngle / 2);
+                        const step = spreadAngle / (TOTAL_IMAGES - 1);
+
+                        const scrollProgress = Math.min(Math.max(rotateValue / 360, 0), 1);
+                        const maxRotation = spreadAngle * 0.8;
+                        const boundedRotation = -scrollProgress * maxRotation;
+
+                        const currentArcAngle = startAngle + (i * step) + boundedRotation;
+                        const arcRad = (currentArcAngle * Math.PI) / 180;
+
+                        const arcPos = {
+                            x: Math.cos(arcRad) * arcRadius + parallaxValue,
+                            y: Math.sin(arcRad) * arcRadius + arcCenterY,
+                            rotation: currentArcAngle + 90,
+                            scale: isMobile ? 1.4 : 1.8,
+                        };
+
+                        // Interpolate morph progress
+                        target = {
+                            x: lerp(circlePos.x, arcPos.x, morphValue),
+                            y: lerp(circlePos.y, arcPos.y, morphValue),
+                            rotation: lerp(circlePos.rotation, arcPos.rotation, morphValue),
+                            scale: lerp(1, arcPos.scale, morphValue),
+                            opacity: 1,
+                        };
+                    }
+
+                    const optimizedSrc = `/_next/image?url=${encodeURIComponent(src)}&w=128&q=75`;
+
+                    return (
+                        <FlipCard
+                            key={i}
+                            src={optimizedSrc}
+                            index={i}
+                            total={TOTAL_IMAGES}
+                            phase={introPhase}
+                            target={target}
+                        />
+                    );
+                })}
+            </div>
+        </div>
+    );
+}
+
+// --- The Combined Layout Page (Exports as default) ---
+export default function IgnitePage() {
+    return (
+        <div className="w-full min-h-screen bg-zinc-50 dark:bg-[#050505] overflow-x-hidden">
+            {/* Morphing 3D Card Banner */}
+            <IntroAnimation />
+
+            {/* Dynamic Bento Box Media Grid */}
+            <div className="relative z-10 w-full py-20 bg-white dark:bg-[#080808] border-t border-zinc-200 dark:border-white/10">
+                <div className="max-w-7xl mx-auto px-4 mb-14 text-center">
+                    <h2 className="text-3xl md:text-5xl font-black text-zinc-900 dark:text-white uppercase tracking-tight">
+                        Ignite Media Gallery
                     </h2>
-                    <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-lg leading-relaxed">
-                        Discover a world where technology meets creativity. <br className="hidden md:block" />
-                        Scroll through our curated collection of innovations designed to shape the future.
+                    <p className="text-zinc-500 dark:text-zinc-400 mt-3 max-w-xl mx-auto text-sm md:text-base font-medium">
+                        Explore photography and captured clips highlighting team initiatives and student workshops.
                     </p>
-                </motion.div>
-
-                {/* Main Container */}
-                <div className="relative flex items-center justify-center w-full h-full">
-                    {IMAGES.slice(0, TOTAL_IMAGES).map((src, i) => {
-                        let target = { x: 0, y: 0, rotation: 0, scale: 1, opacity: 1 };
-
-                        // 1. Intro Phases (Scatter -> Line)
-                        if (introPhase === "scatter") {
-                            target = scatterPositions[i];
-                        } else if (introPhase === "line") {
-                            const lineSpacing = 70; // Adjusted for smaller images (60px width + 10px gap)
-                            const lineTotalWidth = TOTAL_IMAGES * lineSpacing;
-                            const lineX = i * lineSpacing - lineTotalWidth / 2;
-                            target = { x: lineX, y: 0, rotation: 0, scale: 1, opacity: 1 };
-                        } else {
-                            // 2. Circle Phase & Morph Logic
-
-                            // Responsive Calculations
-                            const isMobile = containerSize.width < 768;
-                            const minDimension = Math.min(containerSize.width, containerSize.height);
-
-                            // A. Calculate Circle Position
-                            const circleRadius = Math.min(minDimension * 0.35, 350);
-
-                            const circleAngle = (i / TOTAL_IMAGES) * 360;
-                            const circleRad = (circleAngle * Math.PI) / 180;
-                            const circlePos = {
-                                x: Math.cos(circleRad) * circleRadius,
-                                y: Math.sin(circleRad) * circleRadius,
-                                rotation: circleAngle + 90,
-                            };
-
-                            // B. Calculate Bottom Arc Position
-                            const baseRadius = Math.min(containerSize.width, containerSize.height * 1.5);
-                            const arcRadius = baseRadius * (isMobile ? 1.4 : 1.1);
-
-                            const arcApexY = containerSize.height * (isMobile ? 0.35 : 0.25);
-                            const arcCenterY = arcApexY + arcRadius;
-
-                            const spreadAngle = isMobile ? 100 : 130;
-                            const startAngle = -90 - (spreadAngle / 2);
-                            const step = spreadAngle / (TOTAL_IMAGES - 1);
-
-                            const scrollProgress = Math.min(Math.max(rotateValue / 360, 0), 1);
-
-                            const maxRotation = spreadAngle * 0.8;
-                            const boundedRotation = -scrollProgress * maxRotation;
-
-                            const currentArcAngle = startAngle + (i * step) + boundedRotation;
-                            const arcRad = (currentArcAngle * Math.PI) / 180;
-
-                            const arcPos = {
-                                x: Math.cos(arcRad) * arcRadius + parallaxValue,
-                                y: Math.sin(arcRad) * arcRadius + arcCenterY,
-                                rotation: currentArcAngle + 90,
-                                scale: isMobile ? 1.4 : 1.8,
-                            };
-
-                            // C. Interpolate (Morph)
-                            target = {
-                                x: lerp(circlePos.x, arcPos.x, morphValue),
-                                y: lerp(circlePos.y, arcPos.y, morphValue),
-                                rotation: lerp(circlePos.rotation, arcPos.rotation, morphValue),
-                                scale: lerp(1, arcPos.scale, morphValue),
-                                opacity: 1,
-                            };
-                        }
-
-                        return (
-                            <FlipCard
-                                key={i}
-                                src={src}
-                                index={i}
-                                total={TOTAL_IMAGES}
-                                phase={introPhase} // Pass intro phase for initial animations
-                                target={target}
-                            />
-                        );
-                    })}
+                    <p className="text-emerald-500 text-xs font-bold tracking-[0.25em] mt-3 uppercase">
+                        Hover Videos to Play • Click to Enlarge
+                    </p>
                 </div>
+                <IgniteMediaGrid />
             </div>
         </div>
     );

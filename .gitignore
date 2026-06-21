@@ -56,3 +56,18 @@ compendium.txt
 merge_projects.js
 migrate_projects.js
 parse_compendium.ps1
+
+# Exclude raw heavy media folders over 100MB
+public/images/SnakeTimelineNodes/IASFaddressalevent/
+public/images/SnakeTimelineNodes/InvestitureCeremony/Investiture ceremony/
+
+# Heavy media files
+*.mp4
+*.MP4
+*.mov
+*.MOV
+*.ARW
+*.arw
+*.docx
+*.DOCX
+
