@@ -65,7 +65,7 @@ function FeatureCard({
 }: {
   title: string;
   description: string;
-  icon: React.ElementType;
+  icon: any;
 }) {
   return (
     <div className="group relative h-full flex flex-col rounded-2xl bg-zinc-50 border border-zinc-200 p-7 transition-all duration-300 hover:border-zinc-300 cursor-default dark:bg-[#0a0a0a] dark:border-white/10 dark:hover:border-emerald-500/30">
@@ -89,7 +89,7 @@ function ApproachCard({
   title: string;
   description: string;
   step: string;
-  icon: React.ElementType;
+  icon: any;
 }) {
   return (
     <div className="group relative h-full rounded-2xl border border-zinc-200 bg-zinc-50 p-7 transition-all duration-300 hover:border-zinc-300 flex flex-col gap-7 cursor-default dark:bg-[#0a0a0a] dark:border-white/10 dark:hover:border-emerald-500/30">

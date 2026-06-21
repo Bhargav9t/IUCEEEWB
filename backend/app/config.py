@@ -8,10 +8,12 @@ class Settings(BaseSettings):
     neon_database_url: Optional[str] = None
     resend_api_key: str = ""
     secret_admin_key: str = "dev_secret"
+    smtp_username: str = ""
+    smtp_password: str = ""
 
     # Comma-separated list of allowed CORS origins.
     # Example: "https://myapp.vercel.app,https://preview-abc.vercel.app"
-    frontend_url: str = "http://localhost:3000"
+    frontend_url: str = "http://localhost:3000,http://127.0.0.1:3000"
 
     @computed_field  # type: ignore[misc]
     @property

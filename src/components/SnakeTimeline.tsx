@@ -123,6 +123,12 @@ const timelineEvents = [
     icon: Droplets
   },
   {
+    id: "investiture-ceremony", date: "MAR 2026", title: "INVESTITURE CEREMONY",
+    desc: "Official induction of the new executive board and core team.",
+    icon: Medal,
+    link: "/investiture-ceremony"
+  },
+  {
     id: "present-team", date: "2026", title: "PRESENT TEAM",
     desc: "Meet the current members driving our chapter's mission forward.",
     icon: Users,
@@ -132,7 +138,7 @@ const timelineEvents = [
     id: "20", date: "APR 10, 2026", title: "IGNITE 2026",
     desc: "Welcoming the incoming batch to the chapter.",
     icon: PartyPopper,
-    image: "/images/events/Ignite.jpeg"
+    link: "/ignite"
   },
   {
     id: "22", date: "APR 15, 2026", title: "HELPING HEARTS NGO VISIT",
