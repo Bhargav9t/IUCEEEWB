@@ -14,7 +14,7 @@ export default function NewsletterStrip() {
 
     setStatus("loading");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000";
+      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const res = await fetch(`${apiUrl}/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -71,7 +71,7 @@ export default function NewsletterStrip() {
             <button
               type="submit"
               disabled={status === "loading"}
-              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors duration-200 disabled:opacity-60 shrink-0"
+              className="flex items-center gap-1.5 px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-sm font-semibold transition-colors duration-200 disabled:opacity-100 disabled:bg-emerald-400 disabled:brightness-110 shrink-0"
             >
               {status === "loading" ? (
                 <Loader2 size={15} className="animate-spin" />
