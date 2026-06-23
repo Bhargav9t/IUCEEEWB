@@ -56,3 +56,5 @@ compendium.txt
 merge_projects.js
 migrate_projects.js
 parse_compendium.ps1
+local_dev.db
+.continue/
