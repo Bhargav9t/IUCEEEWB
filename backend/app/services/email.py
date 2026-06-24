@@ -23,7 +23,7 @@ async def send_welcome_email(email: str):
             {
                 "from": "IUCEE EWB HITAM <onboarding@resend.dev>",
                 "to": email,
-                "subject":"Welcome to IUCEE EWB HITAM Newsletter!",
+                "subject": "Welcome to IUCEE EWB HITAM Newsletter!",
                 "html": f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
                     <div style="text-align: center; margin-bottom: 30px;">
