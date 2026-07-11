@@ -88,14 +88,9 @@ function FlipCard({
     );
 }
 
-// --- Main Hero Component Configuration ---
-const TOTAL_IMAGES = 20;
-const MAX_SCROLL = 3000; // Virtual scroll range
-
 // Local Ignite Images from public/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/
 const IMAGES = [
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05765.JPG",
-    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05766.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05773.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05774.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05775.JPG",
@@ -104,7 +99,6 @@ const IMAGES = [
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05779.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05781.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05784.JPG",
-    "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05785.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05786.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05806.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/DSC05807.JPG",
@@ -115,6 +109,10 @@ const IMAGES = [
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/C0100T01.JPG",
     "/images/SnakeTimelineNodes/Ignite/2. Ignite/ignite 2026/C0101T01.JPG"
 ];
+
+// --- Main Hero Component Configuration ---
+const TOTAL_IMAGES = IMAGES.length;
+const MAX_SCROLL = 3000; // Virtual scroll range
 
 // Helper for linear interpolation
 const lerp = (start: number, end: number, t: number) => start * (1 - t) + end * t;

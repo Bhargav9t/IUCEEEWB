@@ -4,6 +4,7 @@ import React, { useRef, useState, useEffect } from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Play, VolumeX, Maximize2, X } from 'lucide-react';
+import Image from 'next/image';
 
 interface MediaItem {
   id: string;
@@ -64,7 +65,6 @@ export default function IgniteMediaGrid() {
 /* Image helper subcomponent with skeleton loader */
 function BentoImage({ src, alt }: { src: string; alt: string }) {
   const [loaded, setLoaded] = useState(false);
-  const optimizedSrc = `/_next/image?url=${encodeURIComponent(src)}&w=640&q=75`;
 
   return (
     <div className="relative w-full h-full">
@@ -73,11 +73,13 @@ function BentoImage({ src, alt }: { src: string; alt: string }) {
           <div className="w-8 h-8 rounded-full border-2 border-emerald-500/30 border-t-emerald-500 animate-spin" />
         </div>
       )}
-      <img
-        src={optimizedSrc}
+      <Image
+        src={src}
         alt={alt}
+        fill
+        sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
         className={cn(
-          'w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105',
+          'object-cover transition-transform duration-700 ease-out group-hover:scale-105',
           loaded ? 'opacity-100' : 'opacity-0'
         )}
         onLoad={() => setLoaded(true)}
