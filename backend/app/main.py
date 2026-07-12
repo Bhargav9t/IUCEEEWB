@@ -12,16 +12,34 @@ import app.models.journey      # noqa: F401
 # Auto-create tables on startup (idempotent — safe to run repeatedly)
 Base.metadata.create_all(bind=engine)
 
-# Dynamic Migration: Add registration_url column to events if missing
+startup_logs = []
+
+# Dynamic Migration: Add registration_url column to events if missing (compatible with SQLite & Postgres)
 def run_migrations():
     try:
+        is_postgres = "postgresql" in str(engine.url)
         with engine.begin() as conn:
-            res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
-            columns = [row[1] for row in res]
-            if "registration_url" not in columns:
-                print("Migration: Adding registration_url column to events table")
-                conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+            if is_postgres:
+                # Check column existence in PostgreSQL
+                res = conn.execute(text(
+                    "SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='registration_url';"
+                )).fetchone()
+                if not res:
+                    startup_logs.append("Migration: Adding registration_url column to events table in Postgres")
+                    conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+                else:
+                    startup_logs.append("Migration check: registration_url already exists in Postgres")
+            else:
+                # Check column existence in SQLite
+                res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
+                columns = [row[1] for row in res]
+                if "registration_url" not in columns:
+                    startup_logs.append("Migration: Adding registration_url column to events table in SQLite")
+                    conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+                else:
+                    startup_logs.append("Migration check: registration_url already exists in SQLite")
     except Exception as e:
+        startup_logs.append(f"Migration warning: {str(e)}")
         print("Migration warning:", e)
 
 run_migrations()
@@ -31,7 +49,10 @@ def seed_journey():
     from app.models.journey import JourneyNode
     db = SessionLocal()
     try:
-        if db.query(JourneyNode).count() == 0:
+        count = db.query(JourneyNode).count()
+        startup_logs.append(f"JourneyNode count check: found {count} nodes in database")
+        if count == 0:
+            startup_logs.append("Seeding default journey nodes...")
             print("Seeding default journey nodes...")
             default_nodes = [
                 {"node_id": "01", "date": "AUG 2019", "title": "THE BEGINNING", "desc": "Chapter established as a non-profit for community engineering.", "icon": "Flag", "sort_order": 1},
@@ -65,8 +86,10 @@ def seed_journey():
             for n in default_nodes:
                 db.add(JourneyNode(**n))
             db.commit()
+            startup_logs.append("Successfully seeded journey nodes.")
             print("Successfully seeded journey nodes.")
     except Exception as e:
+        startup_logs.append(f"Seeding warning: {str(e)}")
         print("Seeding warning:", e)
     finally:
         db.close()
@@ -100,3 +123,11 @@ app.include_router(journey.router)
 @app.get("/")
 def root():
     return {"status": "ok", "message": "IUCEE-EWB HITAM API is running"}
+
+
+@app.get("/admin/debug-db")
+def debug_db():
+    return {
+        "database_url": str(engine.url).split("@")[-1],  # hide credentials
+        "startup_logs": startup_logs
+    }
