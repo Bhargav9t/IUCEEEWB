@@ -74,4 +74,8 @@ public/images/SnakeTimelineNodes/InvestitureCeremony/Investiture ceremony/
 *.docx
 *.DOCX
 
+backend/venv/
+brain/
+*.log
+
 

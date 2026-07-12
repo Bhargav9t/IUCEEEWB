@@ -25,6 +25,53 @@ def create_event(
     db.refresh(db_event)
     return db_event
 
+@router.get("/admin/events", response_model=List[Event])
+def read_all_events(
+    skip: int = 0,
+    limit: int = 100,
+    db: Session = Depends(get_db),
+    admin: None = Depends(verify_admin_key),
+):
+    return (
+        db.query(EventModel)
+        .order_by(EventModel.date.desc())
+        .offset(skip)
+        .limit(limit)
+        .all()
+    )
+
+@router.put("/admin/events/{event_id}", response_model=Event)
+def update_event(
+    event_id: int,
+    event_update: EventCreate,
+    db: Session = Depends(get_db),
+    admin: None = Depends(verify_admin_key),
+):
+    db_event = db.query(EventModel).filter(EventModel.id == event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    for key, value in event_update.model_dump().items():
+        setattr(db_event, key, value)
+        
+    db.commit()
+    db.refresh(db_event)
+    return db_event
+
+@router.delete("/admin/events/{event_id}")
+def delete_event(
+    event_id: int,
+    db: Session = Depends(get_db),
+    admin: None = Depends(verify_admin_key),
+):
+    db_event = db.query(EventModel).filter(EventModel.id == event_id).first()
+    if not db_event:
+        raise HTTPException(status_code=404, detail="Event not found")
+    
+    db.delete(db_event)
+    db.commit()
+    return {"status": "ok", "message": "Event deleted successfully"}
+
 @router.get("/events", response_model=List[Event])
 def read_events(skip: int = 0, limit: int = 100, db: Session = Depends(get_db)):
     return (

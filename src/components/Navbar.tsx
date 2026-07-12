@@ -33,6 +33,54 @@ export default function Navbar() {
     setIsOpen(false);
   }, [pathname]);
 
+  // Secret key listener for admin dashboard redirect (Shift+R+E)
+  useEffect(() => {
+    const activeKeys = new Set<string>();
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      // Ignore if user is typing in an input or textarea
+      const target = e.target as HTMLElement;
+      if (
+        target && (
+          target.tagName === "INPUT" ||
+          target.tagName === "TEXTAREA" ||
+          target.isContentEditable
+        )
+      ) {
+        return;
+      }
+
+      // Detect Shift + R + E held simultaneously using physical e.code
+      activeKeys.add(e.code);
+      const hasShift = activeKeys.has("ShiftLeft") || activeKeys.has("ShiftRight") || e.shiftKey;
+      if (
+        hasShift &&
+        activeKeys.has("KeyR") &&
+        activeKeys.has("KeyE")
+      ) {
+        activeKeys.clear();
+        window.location.href = "/admin";
+      }
+    };
+
+    const handleKeyUp = (e: KeyboardEvent) => {
+      activeKeys.delete(e.code);
+    };
+
+    const handleBlur = () => {
+      activeKeys.clear();
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    window.addEventListener("keyup", handleKeyUp);
+    window.addEventListener("blur", handleBlur);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+      window.removeEventListener("keyup", handleKeyUp);
+      window.removeEventListener("blur", handleBlur);
+    };
+  }, []);
+
   const navLinks = [
     { href: "/",        label: "Home" },
     { href: "/about",   label: "About" },

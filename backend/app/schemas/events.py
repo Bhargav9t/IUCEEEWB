@@ -8,6 +8,7 @@ class EventBase(BaseModel):
     date: datetime
     image_url: Optional[str] = None
     location: Optional[str] = None
+    registration_url: Optional[str] = None
 
 class EventCreate(EventBase):
     pass

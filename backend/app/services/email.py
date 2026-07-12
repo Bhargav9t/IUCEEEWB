@@ -22,7 +22,7 @@ async def send_welcome_email(email: str):
         response = resend.Emails.send(
             {
                 "from": "IUCEE EWB HITAM <onboarding@resend.dev>",
-                "to": email,
+                "to": email.lower(),
                 "subject": "Welcome to IUCEE EWB HITAM Newsletter!",
                 "html": f"""
                 <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px;">
@@ -88,3 +88,61 @@ async def send_welcome_email(email: str):
         print("=" * 50)
 
         return False
+
+
+async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attachment_data: dict = None):
+    """Send a bulk newsletter email to all subscribers with an optional attachment."""
+    import base64
+
+    print("=" * 50)
+    print(f"Attempting to send bulk newsletter to {len(emails)} subscribers")
+    print(f"Subject: {subject}")
+    print(f"API Key Present: {bool(settings.resend_api_key)}")
+    print("=" * 50)
+
+    if not settings.resend_api_key:
+        print("[DEV MODE] No Resend API key found. Skipping actual email dispatch.")
+        print(f"Newsletter Body:\n{body_text}")
+        if attachment_data:
+            print(f"Attachment file: {attachment_data.get('filename')}")
+        return False
+
+    try:
+        attachments = []
+        if attachment_data:
+            attachments.append({
+                "filename": attachment_data["filename"],
+                "content": attachment_data["content"]
+            })
+
+        for recipient in emails:
+            try:
+                email_payload = {
+                    "from": "IUCEE EWB HITAM <newsletter@resend.dev>",
+                    "to": recipient.lower(),
+                    "subject": subject,
+                    "html": f"""
+                    <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; line-height: 1.6;">
+                        <div style="text-align: center; border-bottom: 2px solid #10b981; padding-bottom: 15px; margin-bottom: 20px;">
+                            <h2 style="color: #10b981; margin: 0;">IUCEE-EWB HITAM Newsletter</h2>
+                        </div>
+                        <div style="color: #333; font-size: 16px; white-space: pre-wrap;">{body_text}</div>
+                        <div style="margin-top: 30px; padding-top: 15px; border-top: 1px solid #eee; font-size: 12px; color: #888; text-align: center;">
+                            <p>You received this email because you subscribed to the IUCEE-EWB HITAM newsletter.</p>
+                            <p><a href="https://iuceeewb.org" style="color: #10b981; text-decoration: none;">Visit our website</a></p>
+                        </div>
+                    </div>
+                    """
+                }
+                if attachments:
+                    email_payload["attachments"] = attachments
+
+                resend.Emails.send(email_payload)
+                print(f"Newsletter successfully sent to: {recipient}")
+            except Exception as inner_e:
+                print(f"Error sending email to {recipient}: {inner_e}")
+
+        return True
+    except Exception as e:
+        print("Bulk newsletter dispatch exception:", e)
+        return False

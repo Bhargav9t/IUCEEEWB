@@ -3,7 +3,6 @@
 import { useRef, useEffect, useState } from "react";
 import LightLines from "@/components/LightLines";
 import EventContainer from "@/components/EventContainer";
-import eventsData from "@/data/events.json";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -27,6 +26,40 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function EventsPage() {
+  const [events, setEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchEvents = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/events`);
+        if (!res.ok) throw new Error("Failed to fetch events");
+        const data = await res.json();
+        
+        // Map backend schema (id: int, image_url) to frontend schema (id: string, poster)
+        const mapped = data.map((e: any) => ({
+          id: String(e.id),
+          title: e.title,
+          description: e.description || "",
+          date: e.date,
+          poster: e.image_url || undefined,
+          registration_url: e.registration_url || undefined,
+        }));
+        
+        setEvents(mapped);
+      } catch (err) {
+        console.error("Error fetching events:", err);
+        setError("Unable to connect to the backend server.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchEvents();
+  }, []);
+
   return (
     <div className="min-h-screen bg-white text-zinc-900 overflow-x-hidden dark:bg-[#050505] dark:text-zinc-50">
 
@@ -54,7 +87,19 @@ export default function EventsPage() {
           <LightLines />
         </div>
         <div className="relative z-10 container mx-auto px-6 max-w-6xl">
-          <EventContainer events={eventsData} />
+          {loading ? (
+            <div className="flex flex-col items-center justify-center py-32 gap-4">
+              <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+              <p className="text-zinc-500 dark:text-zinc-400 font-medium animate-pulse">Loading upcoming events...</p>
+            </div>
+          ) : error ? (
+            <div className="text-center py-20 bg-red-500/5 rounded-3xl border border-red-500/10 p-8 max-w-lg mx-auto">
+              <p className="text-red-500 font-semibold mb-2">Could not retrieve events</p>
+              <p className="text-zinc-400 text-sm">{error}</p>
+            </div>
+          ) : (
+            <EventContainer events={events} />
+          )}
           
           {/* Coming Soon Card */}
           <Reveal delay={200} className="mt-12">

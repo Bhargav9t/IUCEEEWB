@@ -13,7 +13,10 @@ if settings.neon_database_url:
     )
 else:
     # Local SQLite — no server needed, file created automatically
-    DATABASE_URL = "sqlite:///./local_dev.db"
+    import os
+    BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+    DB_PATH = os.path.join(os.path.dirname(BASE_DIR), "local_dev.db")
+    DATABASE_URL = f"sqlite:///{DB_PATH}"
     engine = create_engine(
         DATABASE_URL,
         connect_args={"check_same_thread": False},

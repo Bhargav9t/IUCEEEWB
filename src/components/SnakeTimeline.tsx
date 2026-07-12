@@ -3,11 +3,7 @@
 import React, { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { 
-  Flag, Zap, Factory, Code, BookOpen, Rocket, FileText, 
-  Lightbulb, Upload, Brain, School, Leaf, Globe, 
-  Wrench, Trophy, Sprout, Medal, Cpu, Droplets, PartyPopper, Hourglass, Users, X
-} from "lucide-react";
+import * as Lucide from "lucide-react";
 import RightSideGrid from "./RightSideGrid";
 import { MaskedAvatars } from "@/components/ui/masked-avatars";
 
@@ -19,159 +15,33 @@ const FIRST_TEAM_AVATARS = [
   { avatar: "/images/first-team/purna.jpg", name: "Purna" },
 ];
 
-
-const timelineEvents = [
-  {
-    id: "01", date: "AUG 2019", title: "THE BEGINNING",
-    desc: "Chapter established as a non-profit for community engineering.",
-    icon: Flag
-  },
-  {
-    id: "founder", date: "2019", title: "THE FIRST TEAM",
-    desc: "The founding members and pioneers who laid the core foundation.",
-    icon: Users,
-    link: "/history/first-team"
-  },
-  {
-    id: "02", date: "NOV 8-9, 2024", title: "INNOFIESTA 2024",
-    desc: "Flagship multidisciplinary fest at HITAM.",
-    icon: Zap
-  },
-  {
-    id: "03", date: "MAR 29, 2025", title: "AKSHAYA PATRA VISIT",
-    desc: "Industrial visit to the world's largest automated NGO kitchen.",
-    icon: Factory
-  },
-  {
-    id: "04", date: "MAY 9-10, 2025", title: "HACK YOUR PATH 6.0",
-    desc: "24-hour hackathon with 60 interdisciplinary teams.",
-    icon: Code
-  },
-  {
-    id: "05", date: "MAY 27, 2025", title: "RESEARCH WRITING WORKSHOP",
-    desc: "Training on paper structure and citation practices.",
-    icon: BookOpen
-  },
-  {
-    id: "06", date: "JULY 11-13, 2025", title: "AUNSF 3.0",
-    desc: "Participation in Aeronox and Ignova domains at Anurag University.",
-    icon: Rocket
-  },
-  {
-    id: "07", date: "JULY 25, 2025", title: "INTRODUCTION TO ICTIEE",
-    desc: "Session on academic research publication culture.",
-    icon: FileText
-  },
-  {
-    id: "08", date: "JULY 26 & 28, 2025", title: "DT PROJECT EXPO I",
-    desc: "Showcasing prototypes developed through Design Thinking.",
-    icon: Lightbulb
-  },
-  {
-    id: "09", date: "AUG 31, 2025", title: "ICTIEE SUBMISSIONS",
-    desc: "4 research papers submitted on GenAI, AR, and Gamification.",
-    icon: Upload
-  },
-  {
-    id: "10", date: "SEP 5, 2025", title: "THINKSPRINT IDEATHON",
-    desc: "SDG-focused ideathon involving 7 pitching teams.",
-    icon: Brain
-  },
-  {
-    id: "11", date: "OCT 25, 2025", title: "SCHOOL VISITS",
-    desc: "Needs assessment at Krushi Home and ZPHS Gowdavelly.",
-    icon: School
-  },
-  {
-    id: "12", date: "OCT 31, 2025", title: "AKSHAYAKALPA FARM VISIT",
-    desc: "Exploration of tech integration in organic farming.",
-    icon: Leaf
-  },
-  {
-    id: "13", date: "DEC 9, 2025", title: "MR. PETER INTERACTION",
-    desc: "Session with ED of EWB East Africa on humanitarian engineering.",
-    icon: Globe
-  },
-  {
-    id: "14", date: "DEC 19-20, 2025", title: "DT PROJECT EXPO II",
-    desc: "Platform for human-centered solutions addressing real-world problems.",
-    icon: Wrench
-  },
-  {
-    id: "15", date: "JAN 7-10, 2026", title: "ICTIEE 2026 AWARD",
-    desc: "Won the Student Chapter Award at the national conference.",
-    icon: Trophy
-  },
-  {
-    id: "16", date: "JAN 15, 2026", title: "IASF MENTORSHIP",
-    desc: "AI Crop Disease & Waste Mgmt projects selected for elite mentorship.",
-    icon: Sprout
-  },
-  {
-    id: "17", date: "JAN 20, 2026", title: "EDUAITHON TOP 15",
-    desc: "Team Label2Learn ranked among the top 15 teams nationally.",
-    icon: Medal
-  },
-  {
-    id: "18", date: "JAN 28-29, 2026", title: "INNOFIESTA 2026",
-    desc: "Innovation event featuring Reverse Engineering challenges.",
-    icon: Cpu
-  },
-  {
-    id: "19", date: "FEB 2026", title: "RO PLANT INSTALLATION",
-    desc: "Implementation of safe drinking water infrastructure at ZPHS Gowdavelly.",
-    icon: Droplets
-  },
-  {
-    id: "investiture-ceremony", date: "MAR 2026", title: "INVESTITURE CEREMONY",
-    desc: "Official induction of the new executive board and core team.",
-    icon: Medal,
-    link: "/investiture-ceremony"
-  },
-  {
-    id: "present-team", date: "2026", title: "PRESENT TEAM",
-    desc: "Meet the current members driving our chapter's mission forward.",
-    icon: Users,
-    link: "/team"
-  },
-  {
-    id: "20", date: "APR 10, 2026", title: "IGNITE 2026",
-    desc: "Welcoming the incoming batch to the chapter.",
-    icon: PartyPopper,
-    link: "/ignite"
-  },
-  {
-    id: "22", date: "APR 15, 2026", title: "HELPING HEARTS NGO VISIT",
-    desc: "A visit to Helping Hearts NGO.",
-    icon: Users,
-    image: "/images/events/NGOvisit%231.jpeg"
-  },
-  {
-    id: "24", date: "APR 20, 2026", title: "IASF ADDRESSAL EVENT",
-    desc: "Project addressal and validation event for the IUCEE Annual Student Forum projects.",
-    icon: Brain,
-    image: "/images/events/iasf-addressal.jpg",
-    link: "/iasf-addressal-event"
-  },
-  {
-    id: "23", date: "APR 25, 2026", title: "WILLIAM OAKES VISIT",
-    desc: "Interactive mentorship and project design review session by Dr. William Oakes from Purdue University.",
-    icon: School
-  },
-  {
-    id: "21", date: "FUTURE", title: "TO BE CONTINUED...",
-    desc: "Our journey of impact and innovation never stops.",
-    icon: Hourglass
-  },
-];
-
 export default function SnakeTimeline() {
   const [mounted, setMounted] = useState(false);
+  const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   useEffect(() => {
+    const fetchJourneyNodes = async () => {
+      try {
+        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
+        const res = await fetch(`${apiUrl}/journey-nodes`);
+        if (!res.ok) throw new Error("Failed to fetch journey timeline");
+        const data = await res.json();
+        setTimelineEvents(data);
+      } catch (err) {
+        console.error("Error fetching journey nodes:", err);
+        setError("Could not load timeline milestones.");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchJourneyNodes();
     setMounted(true);
   }, []);
+
 
   const generatePath = () => {
     const numItems = timelineEvents.length;
@@ -263,9 +133,24 @@ export default function SnakeTimeline() {
       </div>
 
       <div className="relative z-10 w-full px-4 lg:px-8 max-w-[1600px] mx-auto">
-        
-        {/* Desktop View: Multi-row Vertical Winding SVG Map */}
-        <div className="hidden lg:block relative w-full overflow-x-auto hide-scrollbar pb-24">
+        {loading ? (
+          <div className="flex flex-col items-center justify-center py-40 gap-4 pointer-events-auto">
+            <div className="w-12 h-12 rounded-full border-4 border-emerald-500/20 border-t-emerald-500 animate-spin" />
+            <p className="text-zinc-500 dark:text-zinc-400 font-medium animate-pulse">Loading journey timeline...</p>
+          </div>
+        ) : error ? (
+          <div className="text-center py-20 bg-red-500/5 rounded-3xl border border-red-500/10 p-8 max-w-lg mx-auto pointer-events-auto">
+            <p className="text-red-500 font-semibold mb-2">Could not retrieve timeline</p>
+            <p className="text-zinc-400 text-sm">{error}</p>
+          </div>
+        ) : timelineEvents.length === 0 ? (
+          <div className="text-center py-20 text-zinc-500 text-lg pointer-events-auto">
+            No milestones found.
+          </div>
+        ) : (
+          <>
+            {/* Desktop View: Multi-row Vertical Winding SVG Map */}
+            <div className="hidden lg:block relative w-full overflow-x-auto hide-scrollbar pb-24">
           <div 
             className="relative w-[1200px] min-w-[1200px] mx-auto mt-16"
             style={{ height: `${svgHeight}px` }}
@@ -392,12 +277,17 @@ export default function SnakeTimeline() {
                           </div>
                         )}
 
-                        <div className="flex items-start space-x-3 mb-3 w-full shrink-0">
-                          <span className={`p-2 rounded-lg transition-colors shrink-0 ${theme.iconBg}`}>
-                            <event.icon size={20} strokeWidth={2.5} />
-                          </span>
-                          <span className={`${theme.dateText} font-mono text-[11px] tracking-widest font-semibold drop-shadow-sm pt-2`}>{event.date}</span>
-                        </div>
+                        {(() => {
+                          const IconComponent = (Lucide as any)[event.icon] || Lucide.Flag;
+                          return (
+                            <div className="flex items-start space-x-3 mb-3 w-full shrink-0">
+                              <span className={`p-2 rounded-lg transition-colors shrink-0 ${theme.iconBg}`}>
+                                <IconComponent size={20} strokeWidth={2.5} />
+                              </span>
+                              <span className={`${theme.dateText} font-mono text-[11px] tracking-widest font-semibold drop-shadow-sm pt-2`}>{event.date}</span>
+                            </div>
+                          );
+                        })()}
                         <h3 className={`text-zinc-900 font-bold text-base leading-tight mb-2 uppercase transition-colors dark:text-white shrink-0 line-clamp-2 w-full ${theme.titleHover}`}>{event.title}</h3>
                         <p className="text-zinc-500 text-xs leading-relaxed dark:text-zinc-400 w-full overflow-hidden line-clamp-3">{event.desc}</p>
                      </div>
@@ -464,12 +354,17 @@ export default function SnakeTimeline() {
                               <MaskedAvatars avatars={FIRST_TEAM_AVATARS} />
                             </div>
                           )}
-                          <div className="flex items-start space-x-3 mb-3 w-full">
-                             <span className={`p-2 rounded-lg shrink-0 ${theme.iconBg}`}>
-                               <event.icon size={18} strokeWidth={2.5} />
-                             </span>
-                             <span className={`${theme.dateText} font-mono text-xs sm:text-sm tracking-widest font-semibold drop-shadow-sm pt-1`}>{event.date}</span>
-                          </div>
+                          {(() => {
+                            const IconComponent = (Lucide as any)[event.icon] || Lucide.Flag;
+                            return (
+                              <div className="flex items-start space-x-3 mb-3 w-full">
+                                <span className={`p-2 rounded-lg shrink-0 ${theme.iconBg}`}>
+                                  <IconComponent size={18} strokeWidth={2.5} />
+                                </span>
+                                <span className={`${theme.dateText} font-mono text-xs sm:text-sm tracking-widest font-semibold drop-shadow-sm pt-1`}>{event.date}</span>
+                              </div>
+                            );
+                          })()}
                     <h3 className="text-zinc-900 font-bold text-lg leading-snug mb-2 uppercase dark:text-white">{event.title}</h3>
                     <p className="text-zinc-500 text-sm leading-relaxed dark:text-zinc-400">{event.desc}</p>
                 </div>
@@ -478,7 +373,8 @@ export default function SnakeTimeline() {
           })}
           </div>
         </div>
-
+          </>
+        )}
       </div>
 
 
@@ -508,12 +404,12 @@ export default function SnakeTimeline() {
                 className="pointer-events-auto relative max-w-4xl max-h-[85vh] bg-white dark:bg-[#0a0a0a] border border-zinc-200 dark:border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
               >
                 {/* Header with Close Button */}
-                <div className="absolute top-4 right-4 z-10">
+                 <div className="absolute top-4 right-4 z-10">
                   <button
                     onClick={() => setSelectedImage(null)}
                     className="w-10 h-10 rounded-full flex items-center justify-center bg-black/20 hover:bg-black/40 text-white backdrop-blur-md transition-all focus:outline-none"
                   >
-                    <X size={18} />
+                    <Lucide.X size={18} />
                   </button>
                 </div>
                 

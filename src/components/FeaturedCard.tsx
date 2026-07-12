@@ -70,26 +70,37 @@ export default function FeaturedCard({ event }: FeaturedCardProps) {
           {event.description}
         </p>
 
-        <div className="mt-auto relative z-10">
-          {event.poster ? (
-            <Link
-              href={event.poster}
+        <div className="mt-auto relative z-10 flex flex-wrap items-center gap-4">
+          {event.registration_url && (
+            <a
+              href={event.registration_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-0.5"
+              className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 cursor-pointer"
             >
               <span className="relative z-10 flex items-center gap-2">
-                View Poster
+                Register Now
                 <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
               </span>
               <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
-            </Link>
-          ) : (
+            </a>
+          )}
+          {event.poster && (
+            <a
+              href={event.poster}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl border border-zinc-200 bg-white/40 dark:bg-white/[0.02] text-zinc-800 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold hover:bg-emerald-50/50 hover:border-emerald-500/30 dark:hover:bg-emerald-950/20 dark:hover:border-emerald-500/30 transition-all duration-300 hover:-translate-y-0.5 cursor-pointer"
+            >
+              View Poster
+            </a>
+          )}
+          {!event.registration_url && !event.poster && (
             <button
               disabled
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-zinc-200 text-zinc-400 font-bold cursor-not-allowed dark:bg-white/5 dark:text-zinc-600"
             >
-              Poster Coming Soon
+              Details Coming Soon
             </button>
           )}
         </div>
