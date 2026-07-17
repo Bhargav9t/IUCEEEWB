@@ -146,9 +146,22 @@ def root():
 
 @app.get("/admin/debug-db")
 def debug_db():
+    from sqlalchemy import inspect
+    try:
+        inspector = inspect(engine)
+        schema_info = {}
+        for table_name in inspector.get_table_names():
+            cols = []
+            for col in inspector.get_columns(table_name):
+                cols.append(f"{col['name']} ({str(col['type'])})")
+            schema_info[table_name] = cols
+    except Exception as e:
+        schema_info = {"error": str(e)}
+
     return {
         "database_url": str(engine.url).split("@")[-1],  # hide credentials
-        "startup_logs": startup_logs
+        "startup_logs": startup_logs,
+        "schema": schema_info
     }
 
 
