@@ -150,3 +150,22 @@ def debug_db():
         "database_url": str(engine.url).split("@")[-1],  # hide credentials
         "startup_logs": startup_logs
     }
+
+
+@app.get("/admin/debug-email")
+def debug_email(to_email: str):
+    import resend
+    if not settings.resend_api_key:
+        return {"status": "error", "message": "No resend_api_key configured in settings"}
+    try:
+        resend.api_key = settings.resend_api_key
+        payload = {
+            "from": f"IUCEE EWB HITAM <{settings.from_email}>",
+            "to": to_email,
+            "subject": "IUCEE EWB HITAM Email Debug",
+            "html": "<p>This is a test email sent from the deployed instance debug endpoint.</p>"
+        }
+        res = resend.Emails.send(payload)
+        return {"status": "success", "response": res}
+    except Exception as e:
+        return {"status": "error", "details": str(e)}
