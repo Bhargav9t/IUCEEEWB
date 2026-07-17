@@ -2,7 +2,6 @@
 
 import { Calendar, ArrowRight, Zap } from "lucide-react";
 import { motion } from "framer-motion";
-import Image from "next/image";
 import Link from "next/link";
 import { EventData } from "./EventCard";
 
@@ -23,11 +22,10 @@ export default function FeaturedCard({ event }: FeaturedCardProps) {
       <div className="relative w-full md:w-5/12 min-h-[420px] md:min-h-full bg-black border-b md:border-b-0 md:border-r border-emerald-500/20 overflow-hidden flex-shrink-0 flex items-center justify-center">
         {event.poster ? (
           <>
-            <Image
+            <img
               src={event.poster}
               alt={`${event.title} poster`}
-              fill
-              className="object-contain"
+              className="absolute inset-0 w-full h-full object-contain"
             />
             {/* Overlay to keep UI elements legible */}
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-black/30" />
