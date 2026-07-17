@@ -1,6 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
 import { Instagram, Linkedin, Youtube, Phone } from "lucide-react";
+import { usePathname } from "next/navigation";
 import NewsletterStrip from "./NewsletterStrip";
 
 const DiscordIcon = ({ size = 24 }: { size?: number }) => (
@@ -16,12 +19,15 @@ const FacebookIcon = ({ size = 24 }: { size?: number }) => (
 );
 
 export default function Footer() {
+  const pathname = usePathname();
+  const isAdmin = pathname?.startsWith("/admin");
+
   return (
     <footer className="bg-zinc-50 border-t border-zinc-200 dark:bg-[#020202] dark:border-white/10 transition-colors duration-300">
       <div className="container mx-auto max-w-7xl px-6 py-16 lg:py-20">
 
         {/* Newsletter Strip */}
-        <NewsletterStrip />
+        {!isAdmin && <NewsletterStrip />}
 
         {/* Main grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-12 lg:gap-8 mb-16">
