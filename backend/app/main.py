@@ -16,67 +16,90 @@ startup_logs = []
 
 # Dynamic Migration: Add registration_url column to events if missing (compatible with SQLite & Postgres)
 def run_migrations():
+    should_recreate_journey = False
     try:
         is_postgres = "postgresql" in str(engine.url)
         with engine.begin() as conn:
             if is_postgres:
-                # Check column existence in PostgreSQL for events table
-                res = conn.execute(text(
-                    "SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='registration_url';"
+                # Check for outdated columns in journey_nodes
+                res_old = conn.execute(text(
+                    "SELECT column_name FROM information_schema.columns WHERE table_name='journey_nodes' AND column_name='year_or_date';"
                 )).fetchone()
-                if not res:
-                    startup_logs.append("Migration: Adding registration_url column to events table in Postgres")
-                    conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+                if res_old:
+                    startup_logs.append("Migration: Dropping outdated journey_nodes table in Postgres")
+                    conn.execute(text("DROP TABLE journey_nodes CASCADE;"))
+                    should_recreate_journey = True
                 else:
-                    startup_logs.append("Migration check: registration_url already exists in Postgres")
-
-                # Check and add columns for journey_nodes in Postgres
-                journey_cols = {
-                    "node_id": "VARCHAR",
-                    "date": "VARCHAR",
-                    "title": "VARCHAR",
-                    "desc": "TEXT",
-                    "icon": "VARCHAR",
-                    "image": "VARCHAR",
-                    "link": "VARCHAR",
-                    "sort_order": "INTEGER DEFAULT 0"
-                }
-                for col, col_type in journey_cols.items():
-                    res_col = conn.execute(text(
-                        f"SELECT column_name FROM information_schema.columns WHERE table_name='journey_nodes' AND column_name='{col}';"
+                    # Check column existence in PostgreSQL for events table
+                    res = conn.execute(text(
+                        "SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='registration_url';"
                     )).fetchone()
-                    if not res_col:
-                        startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in Postgres")
-                        col_name = f'"{col}"' if col == "desc" else col
-                        conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col_name} {col_type};"))
-            else:
-                # Check column existence in SQLite for events table
-                res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
-                columns = [row[1] for row in res]
-                if "registration_url" not in columns:
-                    startup_logs.append("Migration: Adding registration_url column to events table in SQLite")
-                    conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
-                else:
-                    startup_logs.append("Migration check: registration_url already exists in SQLite")
+                    if not res:
+                        startup_logs.append("Migration: Adding registration_url column to events table in Postgres")
+                        conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+                    else:
+                        startup_logs.append("Migration check: registration_url already exists in Postgres")
 
-                # Check and add columns for journey_nodes in SQLite
-                res_journey = conn.execute(text("PRAGMA table_info(journey_nodes);")).fetchall()
-                journey_columns = [row[1] for row in res_journey]
-                journey_cols = {
-                    "node_id": "VARCHAR",
-                    "date": "VARCHAR",
-                    "title": "VARCHAR",
-                    "desc": "TEXT",
-                    "icon": "VARCHAR",
-                    "image": "VARCHAR",
-                    "link": "VARCHAR",
-                    "sort_order": "INTEGER DEFAULT 0"
-                }
-                for col, col_type in journey_cols.items():
-                    if col not in journey_columns:
-                        startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in SQLite")
-                        col_name = f'"{col}"' if col == "desc" else col
-                        conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col_name} {col_type};"))
+                    # Check and add columns for journey_nodes in Postgres
+                    journey_cols = {
+                        "node_id": "VARCHAR",
+                        "date": "VARCHAR",
+                        "title": "VARCHAR",
+                        "desc": "TEXT",
+                        "icon": "VARCHAR",
+                        "image": "VARCHAR",
+                        "link": "VARCHAR",
+                        "sort_order": "INTEGER DEFAULT 0"
+                    }
+                    for col, col_type in journey_cols.items():
+                        res_col = conn.execute(text(
+                            f"SELECT column_name FROM information_schema.columns WHERE table_name='journey_nodes' AND column_name='{col}';"
+                        )).fetchone()
+                        if not res_col:
+                            startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in Postgres")
+                            col_name = f'"{col}"' if col == "desc" else col
+                            conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col_name} {col_type};"))
+            else:
+                # SQLite check
+                res_old = conn.execute(text("PRAGMA table_info(journey_nodes);")).fetchall()
+                columns_old = [row[1] for row in res_old]
+                if "year_or_date" in columns_old:
+                    startup_logs.append("Migration: Dropping outdated journey_nodes table in SQLite")
+                    conn.execute(text("DROP TABLE journey_nodes;"))
+                    should_recreate_journey = True
+                else:
+                    # Check column existence in SQLite for events table
+                    res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
+                    columns = [row[1] for row in res]
+                    if "registration_url" not in columns:
+                        startup_logs.append("Migration: Adding registration_url column to events table in SQLite")
+                        conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
+                    else:
+                        startup_logs.append("Migration check: registration_url already exists in SQLite")
+
+                    # Check and add columns for journey_nodes in SQLite
+                    res_journey = conn.execute(text("PRAGMA table_info(journey_nodes);")).fetchall()
+                    journey_columns = [row[1] for row in res_journey]
+                    journey_cols = {
+                        "node_id": "VARCHAR",
+                        "date": "VARCHAR",
+                        "title": "VARCHAR",
+                        "desc": "TEXT",
+                        "icon": "VARCHAR",
+                        "image": "VARCHAR",
+                        "link": "VARCHAR",
+                        "sort_order": "INTEGER DEFAULT 0"
+                    }
+                    for col, col_type in journey_cols.items():
+                        if col not in journey_columns:
+                            startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in SQLite")
+                            col_name = f'"{col}"' if col == "desc" else col
+                            conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col_name} {col_type};"))
+        
+        if should_recreate_journey:
+            startup_logs.append("Recreating journey_nodes table schema")
+            Base.metadata.create_all(bind=engine)
+            
     except Exception as e:
         startup_logs.append(f"Migration warning: {str(e)}")
         print("Migration warning:", e)
