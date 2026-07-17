@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     secret_admin_key: str = "dev_secret"
     smtp_username: str = ""
     smtp_password: str = ""
+    from_email: str = "onboarding@resend.dev"
 
     # Comma-separated list of allowed CORS origins.
     # Example: "https://myapp.vercel.app,https://preview-abc.vercel.app"

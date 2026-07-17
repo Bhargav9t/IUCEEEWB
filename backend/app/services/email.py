@@ -21,7 +21,7 @@ async def send_welcome_email(email: str):
     try:
         response = resend.Emails.send(
             {
-                "from": "IUCEE EWB HITAM <onboarding@resend.dev>",
+                "from": f"IUCEE EWB HITAM <{settings.from_email}>",
                 "to": email.lower(),
                 "subject": "Welcome to IUCEE EWB HITAM Newsletter!",
                 "html": f"""
@@ -118,7 +118,7 @@ async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attac
         for recipient in emails:
             try:
                 email_payload = {
-                    "from": "IUCEE EWB HITAM <newsletter@resend.dev>",
+                    "from": f"IUCEE EWB HITAM <{settings.from_email}>",
                     "to": recipient.lower(),
                     "subject": subject,
                     "html": f"""

@@ -20,7 +20,7 @@ def run_migrations():
         is_postgres = "postgresql" in str(engine.url)
         with engine.begin() as conn:
             if is_postgres:
-                # Check column existence in PostgreSQL
+                # Check column existence in PostgreSQL for events table
                 res = conn.execute(text(
                     "SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='registration_url';"
                 )).fetchone()
@@ -29,8 +29,18 @@ def run_migrations():
                     conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
                 else:
                     startup_logs.append("Migration check: registration_url already exists in Postgres")
+
+                # Check and add columns for journey_nodes in Postgres
+                for col in ["node_id", "sort_order", "link", "image"]:
+                    res_col = conn.execute(text(
+                        f"SELECT column_name FROM information_schema.columns WHERE table_name='journey_nodes' AND column_name='{col}';"
+                    )).fetchone()
+                    if not res_col:
+                        type_str = "INTEGER DEFAULT 0" if col == "sort_order" else "VARCHAR"
+                        startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in Postgres")
+                        conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col} {type_str};"))
             else:
-                # Check column existence in SQLite
+                # Check column existence in SQLite for events table
                 res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
                 columns = [row[1] for row in res]
                 if "registration_url" not in columns:
@@ -38,6 +48,15 @@ def run_migrations():
                     conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
                 else:
                     startup_logs.append("Migration check: registration_url already exists in SQLite")
+
+                # Check and add columns for journey_nodes in SQLite
+                res_journey = conn.execute(text("PRAGMA table_info(journey_nodes);")).fetchall()
+                journey_columns = [row[1] for row in res_journey]
+                for col in ["node_id", "sort_order", "link", "image"]:
+                    if col not in journey_columns:
+                        type_str = "INTEGER DEFAULT 0" if col == "sort_order" else "VARCHAR"
+                        startup_logs.append(f"Migration: Adding {col} column to journey_nodes table in SQLite")
+                        conn.execute(text(f"ALTER TABLE journey_nodes ADD COLUMN {col} {type_str};"))
     except Exception as e:
         startup_logs.append(f"Migration warning: {str(e)}")
         print("Migration warning:", e)
