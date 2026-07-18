@@ -210,18 +210,32 @@ def debug_db():
 
 @app.get("/admin/debug-email")
 def debug_email(to_email: str):
+    from app.services.email import send_email_via_smtp
     import resend
+
+    html = "<p>This is a test email sent from the deployed instance debug endpoint.</p>"
+
+    # 1. Try SMTP first if configured
+    if settings.smtp_username and settings.smtp_password:
+        success = send_email_via_smtp(to_email.lower(), "IUCEE EWB HITAM SMTP Debug", html)
+        if success:
+            return {"status": "success", "provider": "smtp", "message": "Email sent successfully via SMTP"}
+        else:
+            return {"status": "error", "provider": "smtp", "message": "Failed to send email via SMTP"}
+
+    # 2. Fallback to Resend
     if not settings.resend_api_key:
-        return {"status": "error", "message": "No resend_api_key configured in settings"}
+        return {"status": "error", "message": "No email configuration found (SMTP and Resend are both empty)"}
+
     try:
         resend.api_key = settings.resend_api_key
         payload = {
             "from": f"IUCEE EWB HITAM <{settings.from_email}>",
-            "to": to_email,
-            "subject": "IUCEE EWB HITAM Email Debug",
-            "html": "<p>This is a test email sent from the deployed instance debug endpoint.</p>"
+            "to": to_email.lower(),
+            "subject": "IUCEE EWB HITAM Resend Debug",
+            "html": html
         }
         res = resend.Emails.send(payload)
-        return {"status": "success", "response": res}
+        return {"status": "success", "provider": "resend", "response": res}
     except Exception as e:
-        return {"status": "error", "details": str(e)}
+        return {"status": "error", "provider": "resend", "details": str(e)}
