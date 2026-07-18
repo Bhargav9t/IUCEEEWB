@@ -102,9 +102,7 @@ async def send_welcome_email(email: str):
                             <div style="margin-top: 24px; padding-top: 16px; border-top: 1px solid #f3f4f6;">
                                 <p style="font-size: 14px; color: #4b5563; line-height: 1.5; margin: 0;">
                                     Best regards,<br>
-                                    <strong style="color: #111827;">Bhargav</strong><br>
-                                    <span style="font-size: 13px; color: #6b7280;">Lead R&D</span><br>
-                                    <span style="font-size: 13px; color: #6b7280; font-weight: 500;">IUCEE-EWB-HITAM Student Chapter</span>
+                                    <strong style="color: #111827;">IUCEE-EWB-HITAM Team</strong>
                                 </p>
                             </div>
                         </div>
