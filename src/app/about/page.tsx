@@ -177,19 +177,8 @@ export default function AboutPage() {
 
 
       {/* ── TESTIMONIALS ─────────────────────────────────────────────── */}
-      <section className="py-24 border-b border-zinc-100 bg-zinc-50/50">
-        <div className="container mx-auto px-6 max-w-5xl">
-          <Reveal className="mb-12 text-center">
-            <Label>From members</Label>
-            <h2 className="text-3xl md:text-4xl font-black text-zinc-900 tracking-tight dark:text-white">
-              In their own words
-            </h2>
-          </Reveal>
-          
-          <Reveal delay={100}>
-            <TestimonialsCard items={ABOUT_TESTIMONIALS} />
-          </Reveal>
-        </div>
+      <section className="relative w-full border-b border-zinc-100 dark:border-white/5 bg-[#fafafa] dark:bg-[#07080a]">
+        <TestimonialsCard items={ABOUT_TESTIMONIALS} />
       </section>
 
       {/* ── CTA ──────────────────────────────────────────────────────── */}
