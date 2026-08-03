@@ -20,7 +20,7 @@ const CORE_TEAM = [
   { id: 7,  name: "Bhargav",          role: "Lead R&D",             image: "/images/team/Testimony_PIcs/Bhargav.jpg",  imageClass: "object-[center_3%]", linkedin: "https://www.linkedin.com/in/bhargav-reddy-6369b732b/", email: "Bhargavreddy9t@gmail.com" },
   { id: 8,  name: "Yashashwini",      role: "Event Manager",        image: "/images/team/Testimony_PIcs/Yeshashwini.jpeg", linkedin: "https://www.linkedin.com/in/yashaswini-kande-9bb582310/", email: "yashaswinikande@gmail.com" },
   { id: 9,  name: "Harshith",         role: "PR Lead",              image: "/images/team/Testimony_PIcs/Harshith.jpeg", linkedin: "https://www.linkedin.com/in/harshith-godishela/", email: "harshithreddygodishela@gmail.com" },
-  { id: 10, name: "Sai Teja",         role: "Social Media Manager", image: "/images/team/Testimony_PIcs/TrueSaiTeja.jpeg", linkedin: "http://linkedin.com/in/kl-sai-teja-a62129329/", email: "klsaiteja@gmail.com" },
+  { id: 10, name: "Nikhil Surya",      role: "Social Media Manager", image: "/images/team/Testimony_PIcs/NikhilSurya.jpeg", linkedin: "", email: "nikhilsurya.839@gmail.com" },
   { id: 11, name: "Kranthi",          role: "Lead Co-ordinator",    image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg", linkedin: "https://www.linkedin.com/in/kristipati-kranthi-chaitanya-reddy-6a168b330/", email: "4638kranthichaitanyareddy123@gmail.com" },
 ];
 

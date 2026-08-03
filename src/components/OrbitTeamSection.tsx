@@ -15,7 +15,7 @@ const CORE_TEAM = [
   { id: 8,  name: "Yashashwini", role: "Event Manager",         image: "/images/team/Testimony_PIcs/Yeshashwini.jpeg" },
   { id: 9,  name: "Harshith",    role: "PR Lead",               image: "/images/team/Testimony_PIcs/Harshith.jpeg" },
   { id: 10, name: "Kranthi",     role: "Lead Co-ordinator",     image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg" },
-  { id: 11, name: "Sai Teja",    role: "Social Media Manager",  image: "/images/team/Testimony_PIcs/TrueSaiTeja.jpeg" },
+  { id: 11, name: "Nikhil Surya", role: "Social Media Manager",  image: "/images/team/Testimony_PIcs/NikhilSurya.jpeg" },
 ];
 
 // ─── Geometry helpers ─────────────────────────────────────────────────────────
