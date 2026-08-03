@@ -21,5 +21,6 @@ services:
       - key: SECRET_ADMIN_KEY
         sync: false
       - key: FRONTEND_URL
-        value: https://your-vercel-domain.vercel.app  # Update after Vercel deploy
+        value: "*"  # Set to * or specific Vercel URL
+
     healthCheckPath: /

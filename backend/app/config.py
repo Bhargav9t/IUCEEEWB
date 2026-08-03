@@ -15,8 +15,8 @@ class Settings(BaseSettings):
     from_email: str = ""
 
     # Comma-separated list of allowed CORS origins.
-    # Example: "https://myapp.vercel.app,https://preview-abc.vercel.app"
-    frontend_url: str = "http://localhost:3000,http://127.0.0.1:3000"
+    # Example: "https://myapp.vercel.app,https://preview-abc.vercel.app,*"
+    frontend_url: str = "http://localhost:3000,http://127.0.0.1:3000,*"
 
     @computed_field  # type: ignore[misc]
     @property

@@ -164,16 +164,27 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — reads from FRONTEND_URLS env var (comma-separated list of allowed origins)
+# CORS — supports exact origins, wildcard '*', and all Vercel domains
 origins = settings.allowed_origins
 
-app.add_middleware(
-    CORSMiddleware,
-    allow_origins=origins,
-    allow_credentials=True,
-    allow_methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allow_headers=["*"],
-)
+if "*" in origins:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["*"],
+        allow_credentials=False,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+else:
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=origins,
+        allow_origin_regex=r"https://.*\.vercel\.app",
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
 
 from app.routers import events, subscribers, journey  # noqa: E402
 
