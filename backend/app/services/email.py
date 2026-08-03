@@ -266,6 +266,7 @@ async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attac
 
     # 1. Try SMTP first if configured
     if settings.smtp_username and settings.smtp_password:
+        print(f"[SMTP] Attempting bulk dispatch via SMTP ({settings.smtp_username})...", flush=True)
         success = send_bulk_emails_via_smtp(
             [r.lower() for r in emails],
             subject,
@@ -274,11 +275,16 @@ async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attac
         )
         if success:
             return True
+        print("[SMTP] Bulk dispatch failed. Attempting Resend fallback...", flush=True)
+    else:
+        print("[SMTP NOTICE] SMTP_USERNAME / SMTP_PASSWORD not set. Falling back to Resend API.", flush=True)
+        print("[RESEND NOTICE] Free-tier Resend restricts recipients to your account email only. Configure SMTP credentials to email all subscribers.", flush=True)
 
     # 2. Fallback to Resend
     if not settings.resend_api_key:
         print("[DEV MODE] No SMTP credentials or Resend API key found. Skipping Resend bulk send.", flush=True)
         return False
+
 
     attachments = []
     if attachment_data:
