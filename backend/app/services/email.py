@@ -12,17 +12,33 @@ if settings.resend_api_key:
     resend.api_key = settings.resend_api_key
 
 
+def _get_smtp_server():
+    """Helper to connect, authenticate, and return an active SMTP server object."""
+    host = settings.smtp_host or "smtp.gmail.com"
+    port = settings.smtp_port or 587
+
+    if port == 465:
+        server = smtplib.SMTP_SSL(host, port)
+    else:
+        server = smtplib.SMTP(host, port)
+        server.starttls()
+
+    server.login(settings.smtp_username, settings.smtp_password)
+    return server
+
+
 def send_email_via_smtp(to_email: str, subject: str, html_content: str, attachment_data: dict = None) -> bool:
     """Send a single email using SMTP (e.g. Gmail)."""
     if not settings.smtp_username or not settings.smtp_password:
         print("[SMTP] Missing username or password", flush=True)
         return False
 
+    sender = settings.sender_email
     try:
         # Create message container
         msg = MIMEMultipart("alternative")
         msg["Subject"] = subject
-        msg["From"] = f"IUCEE EWB HITAM <{settings.smtp_username}>"
+        msg["From"] = f"IUCEE EWB HITAM <{sender}>"
         msg["To"] = to_email
         
         # Attach HTML body
@@ -40,11 +56,9 @@ def send_email_via_smtp(to_email: str, subject: str, html_content: str, attachme
             )
             msg.attach(part)
             
-        # Connect to SMTP server (Gmail STARTTLS)
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(settings.smtp_username, settings.smtp_password)
-        server.sendmail(settings.smtp_username, to_email, msg.as_string())
+        # Connect to SMTP server
+        server = _get_smtp_server()
+        server.sendmail(sender, to_email, msg.as_string())
         server.quit()
         
         print(f"[SMTP] Email successfully sent to: {to_email}", flush=True)
@@ -55,21 +69,23 @@ def send_email_via_smtp(to_email: str, subject: str, html_content: str, attachme
 
 
 def send_bulk_emails_via_smtp(recipients: list, subject: str, html_contents: list, attachment_data: dict = None) -> bool:
-    """Send multiple emails in a single SMTP session."""
+    """Send multiple emails in a single SMTP session to all subscribers."""
     if not settings.smtp_username or not settings.smtp_password:
         print("[SMTP] Missing username or password for bulk send", flush=True)
         return False
-        
+
+    sender = settings.sender_email
+    success_count = 0
+    fail_count = 0
+
     try:
-        server = smtplib.SMTP("smtp.gmail.com", 587)
-        server.starttls()
-        server.login(settings.smtp_username, settings.smtp_password)
+        server = _get_smtp_server()
         
         for recipient, html in zip(recipients, html_contents):
             try:
                 msg = MIMEMultipart("alternative")
                 msg["Subject"] = subject
-                msg["From"] = f"IUCEE EWB HITAM <{settings.smtp_username}>"
+                msg["From"] = f"IUCEE EWB HITAM <{sender}>"
                 msg["To"] = recipient
                 msg.attach(MIMEText(html, "html"))
                 
@@ -84,13 +100,20 @@ def send_bulk_emails_via_smtp(recipients: list, subject: str, html_contents: lis
                     )
                     msg.attach(part)
                     
-                server.sendmail(settings.smtp_username, recipient, msg.as_string())
+                server.sendmail(sender, recipient, msg.as_string())
+                success_count += 1
                 print(f"[SMTP] Bulk email successfully sent to: {recipient}", flush=True)
             except Exception as inner_e:
+                fail_count += 1
                 print(f"[SMTP] Error sending bulk email to {recipient}: {inner_e}", flush=True)
                 
-        server.quit()
-        return True
+        try:
+            server.quit()
+        except Exception:
+            pass
+
+        print(f"[SMTP] Bulk send finished. Sent: {success_count}, Failed: {fail_count}", flush=True)
+        return success_count > 0 or len(recipients) == 0
     except Exception as e:
         print(f"[SMTP] Bulk email session exception: {e}", flush=True)
         return False
@@ -204,7 +227,7 @@ async def send_welcome_email(email: str):
     try:
         response = resend.Emails.send(
             {
-                "from": f"IUCEE EWB HITAM <{settings.from_email}>",
+                "from": f"IUCEE EWB HITAM <{settings.sender_email}>",
                 "to": email.lower(),
                 "subject": subject,
                 "html": html_content,
@@ -267,7 +290,7 @@ async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attac
     for recipient, html in zip(emails, html_contents):
         try:
             email_payload = {
-                "from": f"IUCEE EWB HITAM <{settings.from_email}>",
+                "from": f"IUCEE EWB HITAM <{settings.sender_email}>",
                 "to": recipient.lower(),
                 "subject": subject,
                 "html": html

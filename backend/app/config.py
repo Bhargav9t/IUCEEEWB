@@ -10,11 +10,23 @@ class Settings(BaseSettings):
     secret_admin_key: str = "dev_secret"
     smtp_username: str = ""
     smtp_password: str = ""
-    from_email: str = "onboarding@resend.dev"
+    smtp_host: str = "smtp.gmail.com"
+    smtp_port: int = 587
+    from_email: str = ""
 
     # Comma-separated list of allowed CORS origins.
     # Example: "https://myapp.vercel.app,https://preview-abc.vercel.app"
     frontend_url: str = "http://localhost:3000,http://127.0.0.1:3000"
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def sender_email(self) -> str:
+        """Returns the configured from_email, or falls back to smtp_username if set."""
+        if self.from_email and self.from_email != "onboarding@resend.dev":
+            return self.from_email
+        if self.smtp_username:
+            return self.smtp_username
+        return self.from_email or "onboarding@resend.dev"
 
     @computed_field  # type: ignore[misc]
     @property

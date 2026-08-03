@@ -29,6 +29,10 @@ jobs:
       - name: Run Newsletter Script
         env:
           NEON_DATABASE_URL: ${{ secrets.NEON_DATABASE_URL }}
+          SMTP_USERNAME: ${{ secrets.SMTP_USERNAME }}
+          SMTP_PASSWORD: ${{ secrets.SMTP_PASSWORD }}
+          SMTP_HOST: ${{ secrets.SMTP_HOST }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
           RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
           SECRET_ADMIN_KEY: ${{ secrets.SECRET_ADMIN_KEY }}
         run: |
