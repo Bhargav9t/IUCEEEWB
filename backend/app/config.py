@@ -20,13 +20,22 @@ class Settings(BaseSettings):
 
     @computed_field  # type: ignore[misc]
     @property
-    def sender_email(self) -> str:
-        """Returns the configured from_email, or falls back to smtp_username if set."""
+    def smtp_sender_email(self) -> str:
+        """Returns the sender email address to use for SMTP dispatch."""
         if self.from_email and self.from_email != "onboarding@resend.dev":
             return self.from_email
         if self.smtp_username:
             return self.smtp_username
-        return self.from_email or "onboarding@resend.dev"
+        return self.from_email or "iuceeewb.hitam@gmail.com"
+
+    @computed_field  # type: ignore[misc]
+    @property
+    def resend_sender_email(self) -> str:
+        """Returns a valid Resend sender address. Resend rejects unverified public domains (@gmail.com, etc.)."""
+        if self.from_email and not any(self.from_email.lower().endswith(domain) for domain in ["@gmail.com", "@yahoo.com", "@hotmail.com", "@outlook.com"]):
+            return self.from_email
+        return "onboarding@resend.dev"
+
 
     @computed_field  # type: ignore[misc]
     @property

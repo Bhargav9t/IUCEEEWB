@@ -33,7 +33,7 @@ def send_email_via_smtp(to_email: str, subject: str, html_content: str, attachme
         print("[SMTP] Missing username or password", flush=True)
         return False
 
-    sender = settings.sender_email
+    sender = settings.smtp_sender_email
     try:
         # Create message container
         msg = MIMEMultipart("alternative")
@@ -74,7 +74,7 @@ def send_bulk_emails_via_smtp(recipients: list, subject: str, html_contents: lis
         print("[SMTP] Missing username or password for bulk send", flush=True)
         return False
 
-    sender = settings.sender_email
+    sender = settings.smtp_sender_email
     success_count = 0
     fail_count = 0
 
@@ -227,7 +227,7 @@ async def send_welcome_email(email: str):
     try:
         response = resend.Emails.send(
             {
-                "from": f"IUCEE EWB HITAM <{settings.sender_email}>",
+                "from": f"IUCEE EWB HITAM <{settings.resend_sender_email}>",
                 "to": email.lower(),
                 "subject": subject,
                 "html": html_content,
@@ -290,7 +290,7 @@ async def send_bulk_newsletter(emails: list, subject: str, body_text: str, attac
     for recipient, html in zip(emails, html_contents):
         try:
             email_payload = {
-                "from": f"IUCEE EWB HITAM <{settings.sender_email}>",
+                "from": f"IUCEE EWB HITAM <{settings.resend_sender_email}>",
                 "to": recipient.lower(),
                 "subject": subject,
                 "html": html
