@@ -7,6 +7,7 @@ import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
 import * as Lucide from "lucide-react";
 import { MaskedAvatars } from "@/components/ui/masked-avatars";
 import { DEFAULT_JOURNEY_NODES, JourneyNodeData } from "@/data/defaultJourneyNodes";
@@ -21,14 +22,24 @@ const FIRST_TEAM_AVATARS = [
   { avatar: "/images/first-team/purna.jpg", name: "Purna" },
 ];
 
-// Color themes for 3D crystal nodes
-const NODE_THEMES = [
+// Color themes for 3D crystal nodes in Dark Mode
+const DARK_NODE_THEMES = [
   { primary: "#10b981", secondary: "#34d399", glow: "#059669", accent: "#a7f3d0" }, // Emerald
   { primary: "#06b6d4", secondary: "#22d3ee", glow: "#0891b2", accent: "#cffaff" }, // Cyan
   { primary: "#6366f1", secondary: "#818cf8", glow: "#4f46e5", accent: "#e0e7ff" }, // Indigo
   { primary: "#ec4899", secondary: "#f472b6", glow: "#db2777", accent: "#fce7f3" }, // Pink/Rose
   { primary: "#f59e0b", secondary: "#fbbf24", glow: "#d97706", accent: "#fef3c7" }, // Amber
   { primary: "#8b5cf6", secondary: "#a78bfa", glow: "#7c3aed", accent: "#ede9fe" }, // Violet
+];
+
+// Color themes for 3D crystal nodes in Light Mode
+const LIGHT_NODE_THEMES = [
+  { primary: "#059669", secondary: "#10b981", glow: "#34d399", accent: "#047857" }, // Emerald
+  { primary: "#0891b2", secondary: "#06b6d4", glow: "#22d3ee", accent: "#0e7490" }, // Cyan
+  { primary: "#4f46e5", secondary: "#6366f1", glow: "#818cf8", accent: "#4338ca" }, // Indigo
+  { primary: "#db2777", secondary: "#ec4899", glow: "#f472b6", accent: "#be185d" }, // Pink/Rose
+  { primary: "#d97706", secondary: "#f59e0b", glow: "#fbbf24", accent: "#b45309" }, // Amber
+  { primary: "#7c3aed", secondary: "#8b5cf6", glow: "#a78bfa", accent: "#6d28d9" }, // Violet
 ];
 
 // Deterministic 3D Spatial Layout generator for scattered non-linear placement
@@ -62,7 +73,7 @@ function generateNodePositions(count: number) {
 }
 
 // ── 1. STYLIZED EMPTY PLACEHOLDER FACET TEXTURE ──────────────────────────────
-function createEmptyPlaceholderTexture(title: string, colorHex: string) {
+function createEmptyPlaceholderTexture(title: string, colorHex: string, isDark: boolean) {
   const canvas = document.createElement("canvas");
   canvas.width = 512;
   canvas.height = 512;
@@ -70,13 +81,19 @@ function createEmptyPlaceholderTexture(title: string, colorHex: string) {
 
   if (ctx) {
     const grad = ctx.createRadialGradient(256, 256, 10, 256, 256, 280);
-    grad.addColorStop(0, `${colorHex}40`);
-    grad.addColorStop(0.7, "#0d0d0d");
-    grad.addColorStop(1, "#050505");
+    if (isDark) {
+      grad.addColorStop(0, `${colorHex}40`);
+      grad.addColorStop(0.7, "#0d0d0d");
+      grad.addColorStop(1, "#050505");
+    } else {
+      grad.addColorStop(0, `${colorHex}30`);
+      grad.addColorStop(0.7, "#f1f5f9");
+      grad.addColorStop(1, "#e2e8f0");
+    }
     ctx.fillStyle = grad;
     ctx.fillRect(0, 0, 512, 512);
 
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.08)";
+    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.08)" : "rgba(0, 0, 0, 0.08)";
     ctx.lineWidth = 2;
     for (let i = 64; i < 512; i += 64) {
       ctx.beginPath();
@@ -93,7 +110,7 @@ function createEmptyPlaceholderTexture(title: string, colorHex: string) {
     ctx.lineWidth = 6;
     ctx.strokeRect(24, 24, 464, 464);
 
-    ctx.strokeStyle = "rgba(255, 255, 255, 0.4)";
+    ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.4)" : "rgba(0, 0, 0, 0.4)";
     ctx.lineWidth = 4;
     ctx.strokeRect(176, 160, 160, 120);
 
@@ -109,10 +126,10 @@ function createEmptyPlaceholderTexture(title: string, colorHex: string) {
     ctx.lineTo(296, 208);
     ctx.lineTo(326, 268);
     ctx.closePath();
-    ctx.fillStyle = "rgba(255, 255, 255, 0.5)";
+    ctx.fillStyle = isDark ? "rgba(255, 255, 255, 0.5)" : "rgba(0, 0, 0, 0.5)";
     ctx.fill();
 
-    ctx.fillStyle = "#ffffff";
+    ctx.fillStyle = isDark ? "#ffffff" : "#1e293b";
     ctx.font = "bold 20px monospace";
     ctx.textAlign = "center";
     ctx.textBaseline = "middle";
@@ -129,7 +146,7 @@ function createEmptyPlaceholderTexture(title: string, colorHex: string) {
 }
 
 // ── 2. FACET IMAGE / PLACEHOLDER MESH ────────────────────────────────────────
-function CrystalFaceImage({ imageUrl, title, themeColor }: { imageUrl?: string; title: string; themeColor: string }) {
+function CrystalFaceImage({ imageUrl, title, themeColor, isDark }: { imageUrl?: string; title: string; themeColor: string; isDark: boolean }) {
   const [texture, setTexture] = useState<THREE.Texture | null>(null);
 
   useEffect(() => {
@@ -146,14 +163,14 @@ function CrystalFaceImage({ imageUrl, title, themeColor }: { imageUrl?: string; 
         },
         undefined,
         () => {
-          if (isMounted) setTexture(createEmptyPlaceholderTexture(title, themeColor));
+          if (isMounted) setTexture(createEmptyPlaceholderTexture(title, themeColor, isDark));
         }
       );
     } else {
-      setTexture(createEmptyPlaceholderTexture(title, themeColor));
+      setTexture(createEmptyPlaceholderTexture(title, themeColor, isDark));
     }
     return () => { isMounted = false; };
-  }, [imageUrl, title, themeColor]);
+  }, [imageUrl, title, themeColor, isDark]);
 
   if (!texture) return null;
 
@@ -172,8 +189,26 @@ function CrystalFaceImage({ imageUrl, title, themeColor }: { imageUrl?: string; 
 }
 
 // ── 3. TWINKLING / BLINKING STARFIELD ────────────────────────────────────────
-function BlinkingStarfield({ count = 750 }: { count?: number }) {
+function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isDark?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null!);
+
+  const colorChoices = useMemo(() => {
+    return isDark ? [
+      new THREE.Color("#10b981"),
+      new THREE.Color("#06b6d4"),
+      new THREE.Color("#818cf8"),
+      new THREE.Color("#ffffff"),
+      new THREE.Color("#fef08a"),
+      new THREE.Color("#a7f3d0"),
+    ] : [
+      new THREE.Color("#059669"),
+      new THREE.Color("#0891b2"),
+      new THREE.Color("#4f46e5"),
+      new THREE.Color("#d97706"),
+      new THREE.Color("#db2777"),
+      new THREE.Color("#059669"),
+    ];
+  }, [isDark]);
 
   const [positions, baseColors, phases, speeds] = useMemo(() => {
     const posArr = new Float32Array(count * 3);
@@ -181,15 +216,6 @@ function BlinkingStarfield({ count = 750 }: { count?: number }) {
     const baseColArr = new Float32Array(count * 3);
     const phaseArr = new Float32Array(count);
     const speedArr = new Float32Array(count);
-
-    const colorChoices = [
-      new THREE.Color("#10b981"),
-      new THREE.Color("#06b6d4"),
-      new THREE.Color("#818cf8"),
-      new THREE.Color("#ffffff"),
-      new THREE.Color("#fef08a"),
-      new THREE.Color("#a7f3d0"),
-    ];
 
     for (let i = 0; i < count; i++) {
       posArr[i * 3] = (Math.random() - 0.5) * 90;
@@ -210,7 +236,7 @@ function BlinkingStarfield({ count = 750 }: { count?: number }) {
     }
 
     return [posArr, baseColArr, phaseArr, speedArr];
-  }, [count]);
+  }, [count, colorChoices]);
 
   useFrame((state, delta) => {
     if (pointsRef.current) {
@@ -224,8 +250,8 @@ function BlinkingStarfield({ count = 750 }: { count?: number }) {
         const colorArray = colorAttr.array as Float32Array;
         for (let i = 0; i < count; i++) {
           const twinkle = Math.pow(Math.sin(time * speeds[i] + phases[i]) * 0.5 + 0.5, 2);
-          const minLum = 0.15;
-          const finalLum = minLum + twinkle * 0.85;
+          const minLum = isDark ? 0.15 : 0.4;
+          const finalLum = minLum + twinkle * (isDark ? 0.85 : 0.6);
 
           colorArray[i * 3] = baseColors[i * 3] * finalLum;
           colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
@@ -243,18 +269,18 @@ function BlinkingStarfield({ count = 750 }: { count?: number }) {
         <bufferAttribute attach="attributes-color" args={[new Float32Array(count * 3), 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={0.16}
+        size={isDark ? 0.16 : 0.18}
         vertexColors
         transparent
-        opacity={0.85}
-        blending={THREE.AdditiveBlending}
+        opacity={isDark ? 0.85 : 0.55}
+        blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending}
       />
     </points>
   );
 }
 
 // ── 4. FLOATING BACKGROUND SHARDS ────────────────────────────────────────────
-function BackgroundShards({ count = 25 }: { count?: number }) {
+function BackgroundShards({ count = 25, nodeThemes = DARK_NODE_THEMES }: { count?: number; nodeThemes?: typeof DARK_NODE_THEMES }) {
   const groupRef = useRef<THREE.Group>(null!);
 
   const shards = useMemo(() => {
@@ -266,9 +292,9 @@ function BackgroundShards({ count = 25 }: { count?: number }) {
       ] as [number, number, number],
       scale: Math.random() * 0.35 + 0.12,
       rotSpeed: [(Math.random() - 0.5) * 0.4, (Math.random() - 0.5) * 0.4],
-      color: NODE_THEMES[i % NODE_THEMES.length].primary,
+      color: nodeThemes[i % nodeThemes.length].primary,
     }));
-  }, [count]);
+  }, [count, nodeThemes]);
 
   useFrame((_, delta) => {
     if (groupRef.current) {
@@ -304,15 +330,16 @@ interface CrystalNodeProps {
   index: number;
   isActive: boolean;
   isLowEnd: boolean;
+  isDark: boolean;
+  theme: { primary: string; secondary: string; glow: string; accent: string };
   onClick: () => void;
   position: [number, number, number];
   rotOffset: [number, number, number];
 }
 
-function CrystalNode({ node, index, isActive, isLowEnd, onClick, position, rotOffset }: CrystalNodeProps) {
+function CrystalNode({ node, index, isActive, isLowEnd, isDark, theme, onClick, position, rotOffset }: CrystalNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const haloRef = useRef<THREE.Mesh>(null!);
-  const theme = NODE_THEMES[index % NODE_THEMES.length];
   const [hovered, setHovered] = useState(false);
 
   useFrame((_, delta) => {
@@ -352,26 +379,26 @@ function CrystalNode({ node, index, isActive, isLowEnd, onClick, position, rotOf
             <meshStandardMaterial
               color={isActive || hovered ? theme.secondary : theme.primary}
               flatShading={true}
-              roughness={0.2}
-              metalness={0.6}
+              roughness={isDark ? 0.2 : 0.3}
+              metalness={isDark ? 0.6 : 0.4}
               emissive={theme.glow}
-              emissiveIntensity={isActive ? 0.5 : 0.1}
+              emissiveIntensity={isActive ? (isDark ? 0.5 : 0.3) : (isDark ? 0.1 : 0.05)}
             />
           ) : (
             <meshPhysicalMaterial
               color={isActive || hovered ? theme.secondary : theme.primary}
               flatShading={true}
-              roughness={0.15}
-              metalness={0.6}
-              transmission={0.3}
+              roughness={isDark ? 0.15 : 0.25}
+              metalness={isDark ? 0.6 : 0.4}
+              transmission={isDark ? 0.3 : 0.2}
               ior={1.5}
               clearcoat={0.8}
               emissive={theme.glow}
-              emissiveIntensity={isActive ? 0.6 : 0.15}
+              emissiveIntensity={isActive ? (isDark ? 0.6 : 0.35) : (isDark ? 0.15 : 0.08)}
             />
           )}
 
-          <CrystalFaceImage imageUrl={node.image} title={node.title} themeColor={theme.secondary} />
+          <CrystalFaceImage imageUrl={node.image} title={node.title} themeColor={theme.secondary} isDark={isDark} />
         </mesh>
 
         <mesh scale={baseScale * 1.1}>
@@ -399,14 +426,18 @@ function CrystalNode({ node, index, isActive, isLowEnd, onClick, position, rotOf
           </mesh>
         )}
 
-        <pointLight color={theme.primary} intensity={isActive ? 6 : 2} distance={5} />
+        <pointLight color={theme.primary} intensity={isActive ? (isDark ? 6 : 4) : (isDark ? 2 : 1)} distance={5} />
 
         <Html position={[0, baseScale * 1.5 + 0.4, 0]} center distanceFactor={15}>
           <div
             className={`px-3 py-1 rounded-full text-xs font-mono font-bold tracking-wider transition-all duration-300 backdrop-blur-md cursor-pointer whitespace-nowrap shadow-lg flex items-center gap-1.5 border ${
               isActive
-                ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.5)] scale-110"
-                : "bg-black/70 border-white/20 text-zinc-300 hover:border-emerald-400"
+                ? isDark
+                  ? "bg-emerald-500/20 border-emerald-400 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.5)] scale-110"
+                  : "bg-emerald-50 border-emerald-600 text-emerald-800 shadow-md scale-110"
+                : isDark
+                  ? "bg-black/70 border-white/20 text-zinc-300 hover:border-emerald-400"
+                  : "bg-white/95 border-zinc-300 text-zinc-800 hover:border-emerald-600 shadow-sm"
             }`}
           >
             <span className="w-2 h-2 rounded-full animate-pulse" style={{ backgroundColor: theme.primary }} />
@@ -458,6 +489,22 @@ export default function Cosmic3DJourney({
   onSwitchTo2D?: () => void;
 }) {
   const router = useRouter();
+  const { resolvedTheme, theme } = useTheme();
+  const [isDark, setIsDark] = useState(true);
+
+  useEffect(() => {
+    const checkDark = () => {
+      if (typeof document !== "undefined") {
+        setIsDark(document.documentElement.classList.contains("dark"));
+      }
+    };
+    checkDark();
+
+    const observer = new MutationObserver(checkDark);
+    observer.observe(document.documentElement, { attributes: true, attributeFilter: ["class"] });
+    return () => observer.disconnect();
+  }, [resolvedTheme, theme]);
+
   const [nodes, setNodes] = useState<JourneyNodeData[]>(initialEvents || DEFAULT_JOURNEY_NODES);
   const [activeIndex, setActiveIndex] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
@@ -562,29 +609,33 @@ export default function Cosmic3DJourney({
   const handleNodeClick = (index: number) => {
     const targetNode = nodes[index];
     if (index === activeIndex) {
-      if (targetNode.link) {
+      if (targetNode.link && targetNode.link.trim() !== "" && targetNode.link !== "#") {
         if (targetNode.link.startsWith("http")) {
           window.open(targetNode.link, "_blank");
         } else {
           router.push(targetNode.link);
         }
-      } else if (targetNode.image) {
+      } else if (targetNode.image && targetNode.image.trim() !== "") {
         setSelectedImage(targetNode.image);
       }
+      // If neither link nor image exists, stay on node without navigating anywhere!
     } else {
       setActiveIndex(index);
     }
   };
 
+  const nodeThemes = isDark ? DARK_NODE_THEMES : LIGHT_NODE_THEMES;
   const activeNode = nodes[activeIndex] || nodes[0];
-  const activeTheme = NODE_THEMES[activeIndex % NODE_THEMES.length];
+  const activeTheme = nodeThemes[activeIndex % nodeThemes.length];
   const IconComponent = (Lucide as any)[activeNode.icon || ""] || Lucide.Flag;
 
   return (
     <div
       ref={containerRef}
       onMouseMove={handleMouseMove}
-      className="relative w-full h-[90vh] min-h-[650px] bg-[#050505] overflow-hidden select-none"
+      className={`relative w-full h-[90vh] min-h-[650px] overflow-hidden select-none transition-colors duration-500 ${
+        isDark ? "bg-[#050505]" : "bg-slate-50"
+      }`}
     >
       {/* ── 3D CANVAS WORLD ─────────────────────────────────────────────── */}
       <Canvas
@@ -593,13 +644,13 @@ export default function Cosmic3DJourney({
         gl={{ antialias: !isLowEnd, alpha: false, powerPreference: isLowEnd ? "low-power" : "high-performance" }}
         className="w-full h-full"
       >
-        <color attach="background" args={["#050505"]} />
-        <ambientLight intensity={0.5} />
-        <directionalLight position={[10, 15, 10]} intensity={1.5} color="#ffffff" />
-        <directionalLight position={[-10, -10, -10]} intensity={0.8} color={activeTheme.primary} />
+        <color attach="background" args={[isDark ? "#050505" : "#f8fafc"]} />
+        <ambientLight intensity={isDark ? 0.5 : 1.3} />
+        <directionalLight position={[10, 15, 10]} intensity={isDark ? 1.5 : 2.2} color="#ffffff" />
+        <directionalLight position={[-10, -10, -10]} intensity={isDark ? 0.8 : 1.2} color={activeTheme.primary} />
 
-        <BlinkingStarfield count={isLowEnd ? 300 : 750} />
-        <BackgroundShards count={isLowEnd ? 10 : 25} />
+        <BlinkingStarfield count={isLowEnd ? 300 : 750} isDark={isDark} />
+        <BackgroundShards count={isLowEnd ? 10 : 25} nodeThemes={nodeThemes} />
 
         {/* Scattered Non-Linear 3D Crystal Nodes */}
         {nodes.map((node, idx) => {
@@ -611,6 +662,8 @@ export default function Cosmic3DJourney({
               index={idx}
               isActive={idx === activeIndex}
               isLowEnd={isLowEnd}
+              isDark={isDark}
+              theme={nodeThemes[idx % nodeThemes.length]}
               onClick={() => handleNodeClick(idx)}
               position={[pos.x, pos.y, pos.z]}
               rotOffset={pos.rotOffset as [number, number, number]}
@@ -627,9 +680,13 @@ export default function Cosmic3DJourney({
 
       {/* ── TOP BAR CONTROLS & TOGGLE ───────────────────────────────────── */}
       <div className="absolute top-6 left-6 right-6 z-30 flex items-center justify-between pointer-events-auto gap-4 flex-wrap">
-        <div className="flex items-center space-x-3 bg-black/60 backdrop-blur-xl border border-white/10 px-4 py-2 rounded-2xl shadow-xl">
+        <div className={`flex items-center space-x-3 backdrop-blur-xl border px-4 py-2 rounded-2xl shadow-xl transition-colors ${
+          isDark ? "bg-black/60 border-white/10" : "bg-white/80 border-zinc-200"
+        }`}>
           <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-ping" />
-          <span className="text-xs font-mono font-bold tracking-widest text-emerald-400 uppercase">
+          <span className={`text-xs font-mono font-bold tracking-widest uppercase ${
+            isDark ? "text-emerald-400" : "text-emerald-700"
+          }`}>
             3D Cosmic Journey Node
           </span>
         </div>
@@ -640,20 +697,26 @@ export default function Cosmic3DJourney({
             title="Toggle Performance Mode for lower end devices"
             className={`flex items-center gap-2 px-3.5 py-2 rounded-2xl border text-xs font-mono font-semibold transition-all backdrop-blur-xl shadow-lg ${
               isLowEnd
-                ? "bg-amber-500/20 border-amber-400/50 text-amber-300"
-                : "bg-white/5 border-white/15 text-zinc-400 hover:text-white"
+                ? "bg-amber-500/20 border-amber-400/50 text-amber-500"
+                : isDark
+                  ? "bg-white/5 border-white/15 text-zinc-400 hover:text-white"
+                  : "bg-white border-zinc-200 text-zinc-700 hover:bg-zinc-100"
             }`}
           >
-            <Lucide.Zap size={14} className={isLowEnd ? "text-amber-400" : ""} />
+            <Lucide.Zap size={14} className={isLowEnd ? "text-amber-500" : ""} />
             <span>{isLowEnd ? "⚡ Eco / Low-End Mode" : "High Quality"}</span>
           </button>
 
           {onSwitchTo2D && (
             <button
               onClick={onSwitchTo2D}
-              className="flex items-center gap-2 px-4 py-2 rounded-2xl bg-white/10 hover:bg-emerald-500/20 border border-white/15 hover:border-emerald-500/50 text-white text-xs font-semibold tracking-wide transition-all shadow-lg backdrop-blur-xl"
+              className={`flex items-center gap-2 px-4 py-2 rounded-2xl border text-xs font-semibold tracking-wide transition-all shadow-lg backdrop-blur-xl ${
+                isDark
+                  ? "bg-white/10 hover:bg-emerald-500/20 border-white/15 text-white"
+                  : "bg-white hover:bg-emerald-50 border-zinc-200 text-zinc-900"
+              }`}
             >
-              <Lucide.GitCommit size={14} className="text-emerald-400" />
+              <Lucide.GitCommit size={14} className={isDark ? "text-emerald-400" : "text-emerald-600"} />
               <span className="hidden sm:inline">Switch to 2D Map</span>
             </button>
           )}
@@ -670,7 +733,11 @@ export default function Cosmic3DJourney({
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.96 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="p-6 md:p-8 bg-black/85 border border-white/15 rounded-3xl backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.85)] relative overflow-hidden"
+              className={`p-6 md:p-8 border rounded-3xl backdrop-blur-2xl transition-all duration-300 relative overflow-hidden ${
+                isDark
+                  ? "bg-black/85 border-white/15 shadow-[0_10px_40px_rgba(0,0,0,0.85)]"
+                  : "bg-white/95 border-zinc-200 shadow-[0_10px_40px_rgba(0,0,0,0.12)]"
+              }`}
             >
               <div
                 className="absolute top-0 left-0 right-0 h-1 transition-colors duration-500"
@@ -690,7 +757,7 @@ export default function Cosmic3DJourney({
                     style={{
                       backgroundColor: `${activeTheme.primary}20`,
                       borderColor: `${activeTheme.primary}40`,
-                      color: activeTheme.secondary,
+                      color: activeTheme.primary,
                     }}
                   >
                     <IconComponent size={16} strokeWidth={2.5} />
@@ -700,27 +767,31 @@ export default function Cosmic3DJourney({
                     style={{
                       backgroundColor: `${activeTheme.primary}20`,
                       borderColor: `${activeTheme.primary}50`,
-                      color: activeTheme.secondary,
+                      color: activeTheme.primary,
                     }}
                   >
                     {activeNode.date}
                   </span>
                 </div>
-                <span className="text-zinc-500 text-xs font-mono">
+                <span className={`text-xs font-mono ${isDark ? "text-zinc-500" : "text-zinc-400"}`}>
                   NODE {activeIndex + 1} OF {nodes.length}
                 </span>
               </div>
 
-              <h2 className="text-2xl md:text-3xl font-black text-white uppercase tracking-tight leading-tight mb-3">
+              <h2 className={`text-2xl md:text-3xl font-black uppercase tracking-tight leading-tight mb-3 ${
+                isDark ? "text-white" : "text-zinc-900"
+              }`}>
                 {activeNode.title}
               </h2>
 
-              <p className="text-zinc-300 text-sm md:text-base leading-relaxed mb-6 font-light line-clamp-3">
+              <p className={`text-sm md:text-base leading-relaxed mb-6 font-light line-clamp-3 ${
+                isDark ? "text-zinc-300" : "text-zinc-600"
+              }`}>
                 {activeNode.desc}
               </p>
 
               <div className="flex items-center gap-3 flex-wrap">
-                {activeNode.link && (
+                {activeNode.link && activeNode.link.trim() !== "" && activeNode.link !== "#" && (
                   <button
                     onClick={() => {
                       const targetUrl = activeNode.link!;
@@ -730,7 +801,7 @@ export default function Cosmic3DJourney({
                         router.push(targetUrl);
                       }
                     }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-black transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer"
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer"
                     style={{ backgroundColor: activeTheme.primary }}
                   >
                     <span>Explore Milestone Page</span>
@@ -738,10 +809,14 @@ export default function Cosmic3DJourney({
                   </button>
                 )}
 
-                {activeNode.image && (
+                {activeNode.image && activeNode.image.trim() !== "" && (
                   <button
                     onClick={() => setSelectedImage(activeNode.image!)}
-                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-md"
+                    className={`inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider border transition-all cursor-pointer shadow-md ${
+                      isDark
+                        ? "bg-white/10 hover:bg-white/20 text-white border-white/20"
+                        : "bg-zinc-100 hover:bg-zinc-200 text-zinc-900 border-zinc-300"
+                    }`}
                   >
                     <Lucide.Image size={16} />
                     <span>View Photo</span>
@@ -754,16 +829,22 @@ export default function Cosmic3DJourney({
 
         {/* Scroll Hint & Nav Controls */}
         <div className="flex flex-col sm:flex-row items-center gap-3 pointer-events-auto w-full md:w-auto justify-between md:justify-end">
-          <div className="hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl bg-black/60 border border-white/10 backdrop-blur-xl text-zinc-300 text-xs font-mono">
-            <Lucide.Sparkles size={14} className="text-emerald-400 animate-pulse" />
+          <div className={`hidden lg:flex items-center gap-2 px-4 py-2 rounded-2xl border backdrop-blur-xl text-xs font-mono ${
+            isDark ? "bg-black/60 border-white/10 text-zinc-300" : "bg-white/90 border-zinc-200 text-zinc-700 shadow-sm"
+          }`}>
+            <Lucide.Sparkles size={14} className="text-emerald-500 animate-pulse" />
             <span>Scroll mouse wheel to fly through nodes</span>
           </div>
 
-          <div className="flex items-center gap-3 bg-black/70 border border-white/15 p-2 rounded-2xl backdrop-blur-xl shadow-xl">
+          <div className={`flex items-center gap-3 border p-2 rounded-2xl backdrop-blur-xl shadow-xl ${
+            isDark ? "bg-black/70 border-white/15" : "bg-white/90 border-zinc-200"
+          }`}>
             <button
               onClick={() => setActiveIndex((prev) => Math.max(prev - 1, 0))}
               disabled={activeIndex === 0}
-              className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-white disabled:opacity-30 transition-all"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-30 transition-all ${
+                isDark ? "bg-white/5 hover:bg-emerald-500/20 text-white" : "bg-zinc-100 hover:bg-emerald-500/20 text-zinc-800"
+              }`}
             >
               <Lucide.ChevronLeft size={20} />
             </button>
@@ -776,8 +857,10 @@ export default function Cosmic3DJourney({
                   onClick={() => setActiveIndex(i)}
                   className={`transition-all duration-300 rounded-full ${
                     i === activeIndex
-                      ? "w-7 h-2.5 bg-emerald-400 shadow-[0_0_10px_#10b981]"
-                      : "w-2.5 h-2.5 bg-white/20 hover:bg-white/50"
+                      ? "w-7 h-2.5 bg-emerald-500 shadow-[0_0_10px_#10b981]"
+                      : isDark
+                        ? "w-2.5 h-2.5 bg-white/20 hover:bg-white/50"
+                        : "w-2.5 h-2.5 bg-zinc-300 hover:bg-zinc-400"
                   }`}
                 />
               ))}
@@ -786,7 +869,9 @@ export default function Cosmic3DJourney({
             <button
               onClick={() => setActiveIndex((prev) => Math.min(prev + 1, nodes.length - 1))}
               disabled={activeIndex === nodes.length - 1}
-              className="w-11 h-11 rounded-xl flex items-center justify-center bg-white/5 hover:bg-emerald-500/20 text-white disabled:opacity-30 transition-all"
+              className={`w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-30 transition-all ${
+                isDark ? "bg-white/5 hover:bg-emerald-500/20 text-white" : "bg-zinc-100 hover:bg-emerald-500/20 text-zinc-800"
+              }`}
             >
               <Lucide.ChevronRight size={20} />
             </button>
@@ -815,7 +900,9 @@ export default function Cosmic3DJourney({
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.95, y: 20 }}
                   transition={{ type: "spring", damping: 25, stiffness: 300 }}
-                  className="pointer-events-auto relative max-w-4xl max-h-[85vh] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                  className={`pointer-events-auto relative max-w-4xl max-h-[85vh] border rounded-2xl shadow-2xl overflow-hidden flex flex-col ${
+                    isDark ? "bg-[#0a0a0a] border-white/10" : "bg-white border-zinc-200"
+                  }`}
                 >
                   {/* Header with Close Button */}
                   <div className="absolute top-4 right-4 z-10">
@@ -828,7 +915,9 @@ export default function Cosmic3DJourney({
                   </div>
 
                   {/* Image Content */}
-                  <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black/60">
+                  <div className={`w-full h-full flex items-center justify-center overflow-hidden ${
+                    isDark ? "bg-black/60" : "bg-zinc-100/80"
+                  }`}>
                     <img 
                       src={selectedImage} 
                       alt="Event preview" 

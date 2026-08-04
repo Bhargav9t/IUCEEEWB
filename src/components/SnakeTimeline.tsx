@@ -272,18 +272,18 @@ export default function SnakeTimeline({ onSwitchTo3D }: { onSwitchTo3D?: () => v
                      {/* Glassmorphism Data Card */}
                      <div 
                        onClick={() => {
-                          if ("link" in event && event.link) {
+                          if ("link" in event && event.link && event.link.trim() !== "" && event.link !== "#") {
                             if (event.link.startsWith("/")) {
                               window.location.href = event.link;
                             } else {
                               window.open(event.link, "_blank");
                             }
                           }
-                          else if ("image" in event && event.image) setSelectedImage((event as any).image);
+                          else if ("image" in event && event.image && event.image.trim() !== "") setSelectedImage((event as any).image);
                        }}
                        className={`absolute w-[260px] h-auto min-h-[160px] p-5 bg-white border border-zinc-200 rounded-2xl shadow-md transition-all duration-300 group-hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start z-40 origin-center left-1/2 -translate-x-1/2 ${
                          align === 'top' ? 'bottom-full mb-6' : 'top-full mt-6'
-                       } ${("link" in event && event.link) || ("image" in event && event.image) ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+                       } ${("link" in event && event.link && event.link.trim() !== "") || ("image" in event && event.image && event.image.trim() !== "") ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
                      >
                         {/* Connection Tether */}
                         <div className={`absolute left-1/2 -translate-x-1/2 w-[2px] h-6 bg-gradient-to-b ${
@@ -357,16 +357,16 @@ export default function SnakeTimeline({ onSwitchTo3D }: { onSwitchTo3D?: () => v
                       {/* Mobile Glass Card */}
                       <div 
                         onClick={() => {
-                          if ("link" in event && event.link) {
+                          if ("link" in event && event.link && event.link.trim() !== "" && event.link !== "#") {
                             if (event.link.startsWith("/")) {
                               window.location.href = event.link;
                             } else {
                               window.open(event.link, "_blank");
                             }
                           }
-                          else if ("image" in event && event.image) setSelectedImage((event as any).image);
+                          else if ("image" in event && event.image && event.image.trim() !== "") setSelectedImage((event as any).image);
                         }}
-                        className={`p-6 bg-white border border-zinc-200 rounded-2xl shadow-md transition-transform duration-300 hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start w-full relative z-10 ${("link" in event && event.link) || ("image" in event && event.image) ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
+                        className={`p-6 bg-white border border-zinc-200 rounded-2xl shadow-md transition-transform duration-300 hover:-translate-y-1 ${theme.cardHover} dark:bg-[#0a0a0a] dark:border-white/10 flex flex-col items-start w-full relative z-10 ${("link" in event && event.link && event.link.trim() !== "") || ("image" in event && event.image && event.image.trim() !== "") ? 'cursor-pointer hover:scale-[1.02]' : ''}`}
                       >
                           {event.id === "founder" && (
                             <div className="mb-4">
