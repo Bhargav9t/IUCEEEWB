@@ -1,80 +1,24 @@
 "use client";
 
 import React, { useState, useEffect, useRef, useMemo } from "react";
+import { createPortal } from "react-dom";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { Float, Html } from "@react-three/drei";
 import * as THREE from "three";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
 import * as Lucide from "lucide-react";
+import { MaskedAvatars } from "@/components/ui/masked-avatars";
+import { DEFAULT_JOURNEY_NODES, JourneyNodeData } from "@/data/defaultJourneyNodes";
 
-export interface JourneyNodeData {
-  id: string;
-  node_id?: string;
-  date: string;
-  title: string;
-  desc: string;
-  image?: string;
-  link?: string;
-  icon?: string;
-}
+export type { JourneyNodeData };
 
-// Default timeline nodes with empty image placeholders & target links
-const DEFAULT_NODES: JourneyNodeData[] = [
-  {
-    id: "founding",
-    date: "2019 - SEP",
-    title: "Founding of IUCEE-EWB HITAM",
-    desc: "Established as a student chapter dedicated to engineering education and global community development.",
-    icon: "Flag",
-    link: "/about",
-    image: ""
-  },
-  {
-    id: "first_project",
-    date: "2020 - MAR",
-    title: "Clean Water Community Initiative",
-    desc: "Engineered low-cost filtration solutions for surrounding rural areas to improve drinking water access.",
-    icon: "Droplets",
-    link: "/projects",
-    image: ""
-  },
-  {
-    id: "national_summit",
-    date: "2021 - NOV",
-    title: "National Student Leadership Summit",
-    desc: "Hosted over 500 delegates across 30 engineering institutions sharing sustainable technology innovations.",
-    icon: "Award",
-    link: "/events",
-    image: ""
-  },
-  {
-    id: "ignite_expo",
-    date: "2022 - DEC",
-    title: "IGNITE Annual Tech Expo",
-    desc: "Launched flagship project exposition featuring AI, solar energy, and smart rural development prototypes.",
-    icon: "Zap",
-    link: "/ignite",
-    image: ""
-  },
-  {
-    id: "global_recognition",
-    date: "2023 - OCT",
-    title: "IUCEE Global Chapter Excellence",
-    desc: "Awarded top performing chapter for outstanding student engagement and impactful community engineering.",
-    icon: "Globe",
-    link: "/about",
-    image: ""
-  },
-  {
-    id: "ai_expansion",
-    date: "2024 - PRESENT",
-    title: "Next-Gen AI & Tech Hub",
-    desc: "Expanding chapter horizons with modern web software, embedded IoT systems, and automated platform design.",
-    icon: "Cpu",
-    link: "/team",
-    image: ""
-  }
+const FIRST_TEAM_AVATARS = [
+  { avatar: "/images/first-team/aashish.jpg", name: "Aashish" },
+  { avatar: "/images/first-team/bhargav.jpg", name: "Bhargav" },
+  { avatar: "/images/first-team/nagarjuna.jpg", name: "Nagarjuna" },
+  { avatar: "/images/first-team/pranay.jpg", name: "Pranay" },
+  { avatar: "/images/first-team/purna.jpg", name: "Purna" },
 ];
 
 // Color themes for 3D crystal nodes
@@ -514,13 +458,19 @@ export default function Cosmic3DJourney({
   onSwitchTo2D?: () => void;
 }) {
   const router = useRouter();
-  const [nodes, setNodes] = useState<JourneyNodeData[]>(initialEvents || DEFAULT_NODES);
+  const [nodes, setNodes] = useState<JourneyNodeData[]>(initialEvents || DEFAULT_JOURNEY_NODES);
   const [activeIndex, setActiveIndex] = useState(0);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isLowEnd, setIsLowEnd] = useState(false);
+  const [mounted, setMounted] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
 
   const containerRef = useRef<HTMLDivElement>(null);
   const isCooldownRef = useRef(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   // Generate organic non-linear 3D spatial node positions
   const nodePositions = useMemo(() => generateNodePositions(nodes.length), [nodes.length]);
@@ -596,6 +546,8 @@ export default function Cosmic3DJourney({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (containerRef.current && containerRef.current.offsetParent === null) return;
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
         setActiveIndex((prev) => Math.min(prev + 1, nodes.length - 1));
       } else if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
@@ -606,15 +558,18 @@ export default function Cosmic3DJourney({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [nodes.length]);
 
-  // Node click redirection
+  // Node click redirection / preview
   const handleNodeClick = (index: number) => {
     const targetNode = nodes[index];
     if (index === activeIndex) {
-      const targetUrl = targetNode.link || `/events`;
-      if (targetUrl.startsWith("http")) {
-        window.open(targetUrl, "_blank");
-      } else {
-        router.push(targetUrl);
+      if (targetNode.link) {
+        if (targetNode.link.startsWith("http")) {
+          window.open(targetNode.link, "_blank");
+        } else {
+          router.push(targetNode.link);
+        }
+      } else if (targetNode.image) {
+        setSelectedImage(targetNode.image);
       }
     } else {
       setActiveIndex(index);
@@ -623,6 +578,7 @@ export default function Cosmic3DJourney({
 
   const activeNode = nodes[activeIndex] || nodes[0];
   const activeTheme = NODE_THEMES[activeIndex % NODE_THEMES.length];
+  const IconComponent = (Lucide as any)[activeNode.icon || ""] || Lucide.Flag;
 
   return (
     <div
@@ -650,7 +606,7 @@ export default function Cosmic3DJourney({
           const pos = nodePositions[idx] || { x: 0, y: 0, z: -idx * 14, rotOffset: [0, 0, 0] };
           return (
             <CrystalNode
-              key={node.id || idx}
+              key={node.id || node.node_id || idx}
               node={node}
               index={idx}
               isActive={idx === activeIndex}
@@ -704,34 +660,52 @@ export default function Cosmic3DJourney({
         </div>
       </div>
 
-      {/* ── HUD OVERLAY CARD WITH PAGE REDIRECTION CTA ─────────────────── */}
+      {/* ── HUD OVERLAY CARD WITH PAGE REDIRECTION & IMAGE CTA ─────────────────── */}
       <div className="absolute bottom-8 left-6 right-6 lg:left-12 lg:right-12 z-30 pointer-events-none flex flex-col md:flex-row items-end justify-between gap-6">
         <div className="w-full md:max-w-xl pointer-events-auto">
           <AnimatePresence mode="wait">
             <motion.div
-              key={activeNode.id || activeIndex}
+              key={activeNode.id || activeNode.node_id || activeIndex}
               initial={{ opacity: 0, y: 25, scale: 0.96 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               exit={{ opacity: 0, y: -20, scale: 0.96 }}
               transition={{ duration: 0.35, ease: "easeOut" }}
-              className="p-6 md:p-8 bg-black/80 border border-white/15 rounded-3xl backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.85)] relative overflow-hidden"
+              className="p-6 md:p-8 bg-black/85 border border-white/15 rounded-3xl backdrop-blur-2xl shadow-[0_10px_40px_rgba(0,0,0,0.85)] relative overflow-hidden"
             >
               <div
                 className="absolute top-0 left-0 right-0 h-1 transition-colors duration-500"
                 style={{ backgroundColor: activeTheme.primary }}
               />
 
+              {(activeNode.id === "founder" || activeNode.node_id === "founder") && (
+                <div className="mb-4">
+                  <MaskedAvatars avatars={FIRST_TEAM_AVATARS} />
+                </div>
+              )}
+
               <div className="flex items-center justify-between gap-3 mb-3">
-                <span
-                  className="px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-widest uppercase border"
-                  style={{
-                    backgroundColor: `${activeTheme.primary}20`,
-                    borderColor: `${activeTheme.primary}50`,
-                    color: activeTheme.secondary,
-                  }}
-                >
-                  {activeNode.date}
-                </span>
+                <div className="flex items-center gap-2">
+                  <span
+                    className="p-1.5 rounded-lg shrink-0 border"
+                    style={{
+                      backgroundColor: `${activeTheme.primary}20`,
+                      borderColor: `${activeTheme.primary}40`,
+                      color: activeTheme.secondary,
+                    }}
+                  >
+                    <IconComponent size={16} strokeWidth={2.5} />
+                  </span>
+                  <span
+                    className="px-3 py-1 rounded-full text-[11px] font-mono font-bold tracking-widest uppercase border"
+                    style={{
+                      backgroundColor: `${activeTheme.primary}20`,
+                      borderColor: `${activeTheme.primary}50`,
+                      color: activeTheme.secondary,
+                    }}
+                  >
+                    {activeNode.date}
+                  </span>
+                </div>
                 <span className="text-zinc-500 text-xs font-mono">
                   NODE {activeIndex + 1} OF {nodes.length}
                 </span>
@@ -745,22 +719,34 @@ export default function Cosmic3DJourney({
                 {activeNode.desc}
               </p>
 
-              <div className="flex items-center gap-3">
-                <button
-                  onClick={() => {
-                    const targetUrl = activeNode.link || `/events`;
-                    if (targetUrl.startsWith("http")) {
-                      window.open(targetUrl, "_blank");
-                    } else {
-                      router.push(targetUrl);
-                    }
-                  }}
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-black transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer"
-                  style={{ backgroundColor: activeTheme.primary }}
-                >
-                  <span>Explore Milestone Page</span>
-                  <Lucide.ExternalLink size={16} />
-                </button>
+              <div className="flex items-center gap-3 flex-wrap">
+                {activeNode.link && (
+                  <button
+                    onClick={() => {
+                      const targetUrl = activeNode.link!;
+                      if (targetUrl.startsWith("http")) {
+                        window.open(targetUrl, "_blank");
+                      } else {
+                        router.push(targetUrl);
+                      }
+                    }}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-black transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer"
+                    style={{ backgroundColor: activeTheme.primary }}
+                  >
+                    <span>Explore Milestone Page</span>
+                    <Lucide.ExternalLink size={16} />
+                  </button>
+                )}
+
+                {activeNode.image && (
+                  <button
+                    onClick={() => setSelectedImage(activeNode.image!)}
+                    className="inline-flex items-center gap-2 px-5 py-3 rounded-xl text-xs font-bold uppercase tracking-wider bg-white/10 hover:bg-white/20 text-white border border-white/20 transition-all cursor-pointer shadow-md"
+                  >
+                    <Lucide.Image size={16} />
+                    <span>View Photo</span>
+                  </button>
+                )}
               </div>
             </motion.div>
           </AnimatePresence>
@@ -807,6 +793,55 @@ export default function Cosmic3DJourney({
           </div>
         </div>
       </div>
+
+      {/* Image Modal Popup */}
+      {mounted && createPortal(
+        <AnimatePresence>
+          {selectedImage && (
+            <>
+              {/* Backdrop */}
+              <motion.div
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                onClick={() => setSelectedImage(null)}
+                className="fixed inset-0 z-[100] bg-black/70 backdrop-blur-md"
+              />
+
+              {/* Modal Dialog */}
+              <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 md:p-6 pointer-events-none">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                  className="pointer-events-auto relative max-w-4xl max-h-[85vh] bg-[#0a0a0a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col"
+                >
+                  {/* Header with Close Button */}
+                  <div className="absolute top-4 right-4 z-10">
+                    <button
+                      onClick={() => setSelectedImage(null)}
+                      className="w-10 h-10 rounded-full flex items-center justify-center bg-black/40 hover:bg-black/70 text-white backdrop-blur-md transition-all focus:outline-none border border-white/10"
+                    >
+                      <Lucide.X size={18} />
+                    </button>
+                  </div>
+
+                  {/* Image Content */}
+                  <div className="w-full h-full flex items-center justify-center overflow-hidden bg-black/60">
+                    <img 
+                      src={selectedImage} 
+                      alt="Event preview" 
+                      className="w-full max-h-[85vh] object-contain"
+                    />
+                  </div>
+                </motion.div>
+              </div>
+            </>
+          )}
+        </AnimatePresence>,
+        document.body
+      )}
     </div>
   );
 }

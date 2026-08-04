@@ -15,9 +15,11 @@ const FIRST_TEAM_AVATARS = [
   { avatar: "/images/first-team/purna.jpg", name: "Purna" },
 ];
 
-export default function SnakeTimeline() {
+import { DEFAULT_JOURNEY_NODES } from "@/data/defaultJourneyNodes";
+
+export default function SnakeTimeline({ onSwitchTo3D }: { onSwitchTo3D?: () => void }) {
   const [mounted, setMounted] = useState(false);
-  const [timelineEvents, setTimelineEvents] = useState<any[]>([]);
+  const [timelineEvents, setTimelineEvents] = useState<any[]>(DEFAULT_JOURNEY_NODES);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedImage, setSelectedImage] = useState<string | null>(null);
@@ -27,12 +29,14 @@ export default function SnakeTimeline() {
       try {
         const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
         const res = await fetch(`${apiUrl}/journey-nodes`);
-        if (!res.ok) throw new Error("Failed to fetch journey timeline");
-        const data = await res.json();
-        setTimelineEvents(data);
+        if (res.ok) {
+          const data = await res.json();
+          if (data && data.length > 0) {
+            setTimelineEvents(data);
+          }
+        }
       } catch (err) {
-        console.error("Error fetching journey nodes:", err);
-        setError("Could not load timeline milestones.");
+        console.warn("Using default timeline nodes in 2D map due to fetch error:", err);
       } finally {
         setLoading(false);
       }
@@ -130,6 +134,21 @@ export default function SnakeTimeline() {
          >
            Tracing the footprints of impact
          </motion.p>
+         {onSwitchTo3D && (
+           <motion.div
+             initial={{ opacity: 0, y: 10 }}
+             animate={{ opacity: 1, y: 0 }}
+             className="mt-6 flex justify-center pointer-events-auto"
+           >
+             <button
+               onClick={onSwitchTo3D}
+               className="flex items-center gap-2 px-5 py-2.5 rounded-2xl bg-emerald-500/10 hover:bg-emerald-500/20 border border-emerald-500/30 text-emerald-600 dark:text-emerald-400 text-xs font-bold uppercase tracking-wider transition-all shadow-lg backdrop-blur-xl cursor-pointer"
+             >
+               <Lucide.Sparkles size={16} />
+               <span>Switch to 3D Crystal Space</span>
+             </button>
+           </motion.div>
+         )}
       </div>
 
       <div className="relative z-10 w-full px-4 lg:px-8 max-w-[1600px] mx-auto">

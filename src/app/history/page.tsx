@@ -93,11 +93,12 @@ export default function HistoryPage() {
 
       {/* ── INTERACTIVE JOURNEY VIEW ──────────────────────────────────── */}
       <section className="relative z-10">
-        {viewMode === "3d" ? (
+        <div className={viewMode === "3d" ? "block" : "hidden"}>
           <Cosmic3DJourney onSwitchTo2D={() => setViewMode("2d")} />
-        ) : (
-          <SnakeTimeline />
-        )}
+        </div>
+        <div className={viewMode === "2d" ? "block" : "hidden"}>
+          <SnakeTimeline onSwitchTo3D={() => setViewMode("3d")} />
+        </div>
       </section>
 
     </div>
