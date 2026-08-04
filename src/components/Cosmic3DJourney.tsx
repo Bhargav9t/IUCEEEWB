@@ -189,7 +189,7 @@ function CrystalFaceImage({ imageUrl, title, themeColor, isDark }: { imageUrl?: 
 }
 
 // ── 3. TWINKLING / BLINKING STARFIELD ────────────────────────────────────────
-function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isDark?: boolean }) {
+function BlinkingStarfield({ count = 800, isDark = true }: { count?: number; isDark?: boolean }) {
   const pointsRef = useRef<THREE.Points>(null!);
 
   const colorChoices = useMemo(() => {
@@ -202,11 +202,11 @@ function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isD
       new THREE.Color("#a7f3d0"),
     ] : [
       new THREE.Color("#059669"),
-      new THREE.Color("#0891b2"),
-      new THREE.Color("#4f46e5"),
+      new THREE.Color("#0284c7"),
+      new THREE.Color("#6d28d9"),
+      new THREE.Color("#e11d48"),
       new THREE.Color("#d97706"),
-      new THREE.Color("#db2777"),
-      new THREE.Color("#059669"),
+      new THREE.Color("#10b981"),
     ];
   }, [isDark]);
 
@@ -232,7 +232,7 @@ function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isD
       colArr[i * 3 + 2] = c.b;
 
       phaseArr[i] = Math.random() * Math.PI * 2;
-      speedArr[i] = Math.random() * 3.0 + 1.2;
+      speedArr[i] = Math.random() * 2.5 + 1.2;
     }
 
     return [posArr, baseColArr, phaseArr, speedArr];
@@ -240,7 +240,7 @@ function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isD
 
   useFrame((state, delta) => {
     if (pointsRef.current) {
-      pointsRef.current.rotation.z += delta * 0.01;
+      pointsRef.current.rotation.z += delta * 0.008;
 
       const time = state.clock.getElapsedTime();
       const geom = pointsRef.current.geometry;
@@ -249,13 +249,21 @@ function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isD
       if (colorAttr) {
         const colorArray = colorAttr.array as Float32Array;
         for (let i = 0; i < count; i++) {
-          const twinkle = Math.pow(Math.sin(time * speeds[i] + phases[i]) * 0.5 + 0.5, 2);
-          const minLum = isDark ? 0.15 : 0.4;
-          const finalLum = minLum + twinkle * (isDark ? 0.85 : 0.6);
+          const sinWave = Math.sin(time * speeds[i] + phases[i]);
+          const twinkle = Math.pow(sinWave * 0.5 + 0.5, 2.5); // Sharp sparkling peak
 
-          colorArray[i * 3] = baseColors[i * 3] * finalLum;
-          colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
-          colorArray[i * 3 + 2] = baseColors[i * 3 + 2] * finalLum;
+          if (isDark) {
+            const finalLum = 0.2 + twinkle * 0.9;
+            colorArray[i * 3] = baseColors[i * 3] * finalLum;
+            colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
+            colorArray[i * 3 + 2] = baseColors[i * 3 + 2] * finalLum;
+          } else {
+            // High-contrast vibrant star twinkling in light mode
+            const finalLum = 0.45 + twinkle * 0.75;
+            colorArray[i * 3] = baseColors[i * 3] * finalLum;
+            colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
+            colorArray[i * 3 + 2] = baseColors[i * 3 + 2] * finalLum;
+          }
         }
         colorAttr.needsUpdate = true;
       }
@@ -269,10 +277,11 @@ function BlinkingStarfield({ count = 750, isDark = true }: { count?: number; isD
         <bufferAttribute attach="attributes-color" args={[new Float32Array(count * 3), 3]} />
       </bufferGeometry>
       <pointsMaterial
-        size={isDark ? 0.16 : 0.18}
+        size={isDark ? 0.18 : 0.24}
         vertexColors
         transparent
-        opacity={isDark ? 0.85 : 0.55}
+        opacity={isDark ? 0.9 : 0.85}
+        sizeAttenuation={true}
         blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending}
       />
     </points>
