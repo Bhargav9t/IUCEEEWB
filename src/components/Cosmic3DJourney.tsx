@@ -250,7 +250,7 @@ function BlinkingStarfield({ count = 800, isDark = true }: { count?: number; isD
         const colorArray = colorAttr.array as Float32Array;
         for (let i = 0; i < count; i++) {
           const sinWave = Math.sin(time * speeds[i] + phases[i]);
-          const twinkle = Math.pow(sinWave * 0.5 + 0.5, 2.5); // Sharp sparkling peak
+          const twinkle = Math.pow(sinWave * 0.5 + 0.5, 2.5);
 
           if (isDark) {
             const finalLum = 0.2 + twinkle * 0.9;
@@ -258,7 +258,6 @@ function BlinkingStarfield({ count = 800, isDark = true }: { count?: number; isD
             colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
             colorArray[i * 3 + 2] = baseColors[i * 3 + 2] * finalLum;
           } else {
-            // High-contrast vibrant star twinkling in light mode
             const finalLum = 0.45 + twinkle * 0.75;
             colorArray[i * 3] = baseColors[i * 3] * finalLum;
             colorArray[i * 3 + 1] = baseColors[i * 3 + 1] * finalLum;
@@ -333,6 +332,115 @@ function BackgroundShards({ count = 25, nodeThemes = DARK_NODE_THEMES }: { count
   );
 }
 
+// ── 4.5 EXPLOSION SHARD BURST EFFECT ─────────────────────────────────────────
+function CrystalExplosion({
+  position,
+  theme,
+  isDark,
+}: {
+  position: [number, number, number];
+  theme: { primary: string; secondary: string; glow: string };
+  isDark: boolean;
+}) {
+  const groupRef = useRef<THREE.Group>(null!);
+  const ringRef = useRef<THREE.Mesh>(null!);
+  const lightRef = useRef<THREE.PointLight>(null!);
+
+  const shards = useMemo(() => {
+    return Array.from({ length: 50 }).map(() => {
+      const theta = Math.random() * Math.PI * 2;
+      const phi = Math.acos(Math.random() * 2 - 1);
+      const speed = Math.random() * 12 + 6;
+      const velocity = new THREE.Vector3(
+        Math.sin(phi) * Math.cos(theta),
+        Math.sin(phi) * Math.sin(theta),
+        Math.cos(phi)
+      ).multiplyScalar(speed);
+
+      return {
+        velocity,
+        rotSpeed: [(Math.random() - 0.5) * 22, (Math.random() - 0.5) * 22, (Math.random() - 0.5) * 22],
+        scale: Math.random() * 0.45 + 0.15,
+        geometryType: Math.floor(Math.random() * 3),
+      };
+    });
+  }, []);
+
+  const [progress, setProgress] = useState(0);
+
+  useFrame((_, delta) => {
+    if (progress < 1) {
+      setProgress((prev) => Math.min(prev + delta * 1.5, 1));
+    }
+
+    if (groupRef.current) {
+      groupRef.current.children.forEach((child, idx) => {
+        const s = shards[idx];
+        if (s) {
+          child.position.x += s.velocity.x * delta;
+          child.position.y += s.velocity.y * delta;
+          child.position.z += s.velocity.z * delta;
+
+          child.rotation.x += s.rotSpeed[0] * delta;
+          child.rotation.y += s.rotSpeed[1] * delta;
+          child.rotation.z += s.rotSpeed[2] * delta;
+
+          const currentScale = s.scale * Math.max(0, 1 - progress);
+          child.scale.set(currentScale, currentScale, currentScale);
+        }
+      });
+    }
+
+    if (ringRef.current) {
+      const ringScale = 1 + progress * 9;
+      ringRef.current.scale.set(ringScale, ringScale, ringScale);
+    }
+
+    if (lightRef.current) {
+      lightRef.current.intensity = Math.max(0, (1 - progress) * 45);
+    }
+  });
+
+  return (
+    <group position={position}>
+      <pointLight ref={lightRef} color={theme.secondary} intensity={45} distance={20} />
+
+      <mesh ref={ringRef} rotation={[Math.PI / 2, 0, 0]}>
+        <ringGeometry args={[0.6, 0.95, 32]} />
+        <meshBasicMaterial
+          color={theme.secondary}
+          transparent
+          opacity={Math.max(0, (1 - progress) * 0.95)}
+          side={THREE.DoubleSide}
+        />
+      </mesh>
+
+      <group ref={groupRef}>
+        {shards.map((s, i) => (
+          <mesh key={i} scale={s.scale}>
+            {s.geometryType === 0 ? (
+              <tetrahedronGeometry args={[0.5, 0]} />
+            ) : s.geometryType === 1 ? (
+              <octahedronGeometry args={[0.5, 0]} />
+            ) : (
+              <icosahedronGeometry args={[0.5, 0]} />
+            )}
+            <meshStandardMaterial
+              color={i % 2 === 0 ? theme.primary : theme.secondary}
+              emissive={theme.glow}
+              emissiveIntensity={isDark ? 2.5 : 1.5}
+              roughness={0.1}
+              metalness={0.8}
+              transparent
+              opacity={Math.max(0, 1 - progress * 1.1)}
+            />
+          </mesh>
+        ))}
+      </group>
+    </group>
+  );
+}
+
 // ── 5. CRYSTAL GEMSTONE NODE ─────────────────────────────────────────────────
 interface CrystalNodeProps {
   node: JourneyNodeData;
@@ -340,13 +448,14 @@ interface CrystalNodeProps {
   isActive: boolean;
   isLowEnd: boolean;
   isDark: boolean;
+  isExploding: boolean;
   theme: { primary: string; secondary: string; glow: string; accent: string };
   onClick: () => void;
   position: [number, number, number];
   rotOffset: [number, number, number];
 }
 
-function CrystalNode({ node, index, isActive, isLowEnd, isDark, theme, onClick, position, rotOffset }: CrystalNodeProps) {
+function CrystalNode({ node, index, isActive, isLowEnd, isDark, isExploding, theme, onClick, position, rotOffset }: CrystalNodeProps) {
   const meshRef = useRef<THREE.Mesh>(null!);
   const haloRef = useRef<THREE.Mesh>(null!);
   const [hovered, setHovered] = useState(false);
@@ -363,6 +472,10 @@ function CrystalNode({ node, index, isActive, isLowEnd, isDark, theme, onClick, 
   });
 
   const baseScale = isActive ? 1.85 : hovered ? 1.55 : 1.3;
+
+  if (isExploding) {
+    return <CrystalExplosion position={position} theme={theme} isDark={isDark} />;
+  }
 
   return (
     <Float
@@ -463,10 +576,12 @@ function CameraRig({
   activeIndex,
   nodePositions,
   mousePos,
+  isExploding,
 }: {
   activeIndex: number;
   nodePositions: Array<{ x: number; y: number; z: number }>;
   mousePos: { x: number; y: number };
+  isExploding: boolean;
 }) {
   const { camera } = useThree();
 
@@ -476,11 +591,12 @@ function CameraRig({
     // Camera targets focused position in front of target active crystal node
     const targetX = targetNode.x + mousePos.x * 1.2;
     const targetY = targetNode.y + 0.2 + mousePos.y * 0.8;
-    const targetZ = targetNode.z + 6.5;
+    const targetZ = targetNode.z + (isExploding ? 2.0 : 6.5); // Warp camera close on explosion
 
-    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, 0.05);
-    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, 0.05);
-    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, 0.05);
+    const lerpSpeed = isExploding ? 0.12 : 0.05;
+    camera.position.x = THREE.MathUtils.lerp(camera.position.x, targetX, lerpSpeed);
+    camera.position.y = THREE.MathUtils.lerp(camera.position.y, targetY, lerpSpeed);
+    camera.position.z = THREE.MathUtils.lerp(camera.position.z, targetZ, lerpSpeed);
 
     // Look directly at target node center
     camera.lookAt(targetNode.x, targetNode.y, targetNode.z);
@@ -516,6 +632,7 @@ export default function Cosmic3DJourney({
 
   const [nodes, setNodes] = useState<JourneyNodeData[]>(initialEvents || DEFAULT_JOURNEY_NODES);
   const [activeIndex, setActiveIndex] = useState(0);
+  const [explodingIndex, setExplodingIndex] = useState<number | null>(null);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isLowEnd, setIsLowEnd] = useState(false);
   const [mounted, setMounted] = useState(false);
@@ -565,6 +682,7 @@ export default function Cosmic3DJourney({
     if (!el) return;
 
     const handleWheel = (e: WheelEvent) => {
+      if (explodingIndex !== null) return;
       const isScrollDown = e.deltaY > 0;
       const isScrollUp = e.deltaY < 0;
 
@@ -591,7 +709,7 @@ export default function Cosmic3DJourney({
 
     el.addEventListener("wheel", handleWheel, { passive: false });
     return () => el.removeEventListener("wheel", handleWheel);
-  }, [activeIndex, nodes.length]);
+  }, [activeIndex, nodes.length, explodingIndex]);
 
   const handleMouseMove = (e: React.MouseEvent) => {
     const x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -602,6 +720,7 @@ export default function Cosmic3DJourney({
   // Keyboard navigation
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
+      if (explodingIndex !== null) return;
       if (containerRef.current && containerRef.current.offsetParent === null) return;
       if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) return;
       if (e.key === "ArrowRight" || e.key === "ArrowDown") {
@@ -612,22 +731,33 @@ export default function Cosmic3DJourney({
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [nodes.length]);
+  }, [nodes.length, explodingIndex]);
+
+  // Trigger explosion animation and page redirection
+  const triggerExplosionAndNavigate = (targetUrl: string, index: number) => {
+    if (explodingIndex !== null) return;
+    setExplodingIndex(index);
+
+    setTimeout(() => {
+      if (targetUrl.startsWith("http")) {
+        window.open(targetUrl, "_blank");
+      } else {
+        router.push(targetUrl);
+      }
+      setTimeout(() => setExplodingIndex(null), 1000);
+    }, 650);
+  };
 
   // Node click redirection / preview
   const handleNodeClick = (index: number) => {
+    if (explodingIndex !== null) return;
     const targetNode = nodes[index];
     if (index === activeIndex) {
       if (targetNode.link && targetNode.link.trim() !== "" && targetNode.link !== "#") {
-        if (targetNode.link.startsWith("http")) {
-          window.open(targetNode.link, "_blank");
-        } else {
-          router.push(targetNode.link);
-        }
+        triggerExplosionAndNavigate(targetNode.link, index);
       } else if (targetNode.image && targetNode.image.trim() !== "") {
         setSelectedImage(targetNode.image);
       }
-      // If neither link nor image exists, stay on node without navigating anywhere!
     } else {
       setActiveIndex(index);
     }
@@ -672,6 +802,7 @@ export default function Cosmic3DJourney({
               isActive={idx === activeIndex}
               isLowEnd={isLowEnd}
               isDark={isDark}
+              isExploding={explodingIndex === idx}
               theme={nodeThemes[idx % nodeThemes.length]}
               onClick={() => handleNodeClick(idx)}
               position={[pos.x, pos.y, pos.z]}
@@ -684,6 +815,7 @@ export default function Cosmic3DJourney({
           activeIndex={activeIndex}
           nodePositions={nodePositions}
           mousePos={mousePos}
+          isExploding={explodingIndex !== null}
         />
       </Canvas>
 
@@ -802,15 +934,9 @@ export default function Cosmic3DJourney({
               <div className="flex items-center gap-3 flex-wrap">
                 {activeNode.link && activeNode.link.trim() !== "" && activeNode.link !== "#" && (
                   <button
-                    onClick={() => {
-                      const targetUrl = activeNode.link!;
-                      if (targetUrl.startsWith("http")) {
-                        window.open(targetUrl, "_blank");
-                      } else {
-                        router.push(targetUrl);
-                      }
-                    }}
-                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer"
+                    onClick={() => triggerExplosionAndNavigate(activeNode.link!, activeIndex)}
+                    disabled={explodingIndex !== null}
+                    className="inline-flex items-center gap-2 px-6 py-3 rounded-xl text-xs font-bold uppercase tracking-wider text-white transition-transform duration-300 hover:scale-105 shadow-md cursor-pointer disabled:opacity-50"
                     style={{ backgroundColor: activeTheme.primary }}
                   >
                     <span>Explore Milestone Page</span>
@@ -850,7 +976,7 @@ export default function Cosmic3DJourney({
           }`}>
             <button
               onClick={() => setActiveIndex((prev) => Math.max(prev - 1, 0))}
-              disabled={activeIndex === 0}
+              disabled={activeIndex === 0 || explodingIndex !== null}
               className={`w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-30 transition-all ${
                 isDark ? "bg-white/5 hover:bg-emerald-500/20 text-white" : "bg-zinc-100 hover:bg-emerald-500/20 text-zinc-800"
               }`}
@@ -864,6 +990,7 @@ export default function Cosmic3DJourney({
                 <button
                   key={i}
                   onClick={() => setActiveIndex(i)}
+                  disabled={explodingIndex !== null}
                   className={`transition-all duration-300 rounded-full ${
                     i === activeIndex
                       ? "w-7 h-2.5 bg-emerald-500 shadow-[0_0_10px_#10b981]"
@@ -877,7 +1004,7 @@ export default function Cosmic3DJourney({
 
             <button
               onClick={() => setActiveIndex((prev) => Math.min(prev + 1, nodes.length - 1))}
-              disabled={activeIndex === nodes.length - 1}
+              disabled={activeIndex === nodes.length - 1 || explodingIndex !== null}
               className={`w-11 h-11 rounded-xl flex items-center justify-center disabled:opacity-30 transition-all ${
                 isDark ? "bg-white/5 hover:bg-emerald-500/20 text-white" : "bg-zinc-100 hover:bg-emerald-500/20 text-zinc-800"
               }`}
@@ -887,6 +1014,26 @@ export default function Cosmic3DJourney({
           </div>
         </div>
       </div>
+
+      {/* Screen Explosion Warp Overlay Flash */}
+      <AnimatePresence>
+        {explodingIndex !== null && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.6 }}
+            animate={{ opacity: [0, 0.8, 1, 0], scale: [0.6, 1.4, 2] }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="fixed inset-0 z-[200] pointer-events-none flex items-center justify-center overflow-hidden"
+          >
+            <div
+              className="w-[120vw] h-[120vh] rounded-full filter blur-2xl opacity-60"
+              style={{
+                background: `radial-gradient(circle, ${activeTheme.secondary} 0%, ${activeTheme.primary} 40%, transparent 70%)`,
+              }}
+            />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Image Modal Popup */}
       {mounted && createPortal(
