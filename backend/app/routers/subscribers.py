@@ -4,7 +4,7 @@ from typing import List, Optional
 import base64
 from app.database import get_db
 from app.models.subscribers import Subscriber as SubscriberModel
-from app.schemas.subscribers import Subscriber, SubscriberCreate
+from app.schemas.subscribers import Subscriber, SubscriberCreate, SubscribeResponse
 from app.services.email import send_welcome_email, send_bulk_newsletter
 from app.config import settings
 
@@ -15,7 +15,7 @@ def verify_admin_key(x_admin_key: str = Header(...)):
         raise HTTPException(status_code=403, detail="Forbidden: Invalid admin key")
 
 
-@router.post("/subscribe", response_model=Subscriber)
+@router.post("/subscribe", response_model=SubscribeResponse)
 def subscribe(
     sub: SubscriberCreate,
     background_tasks: BackgroundTasks,
@@ -31,9 +31,14 @@ def subscribe(
     db.commit()
     db.refresh(new_sub)
     
-    # Send welcome email in background    
-    background_tasks.add_task(send_welcome_email, sub.email)
-    return new_sub
+    # Send welcome email in background using Resend
+    background_tasks.add_task(send_welcome_email, email_normalized)
+    
+    return SubscribeResponse(
+        status="success",
+        message="Thank you for subscribing! A welcome email has been sent.",
+        email=new_sub.email
+    )
 
 @router.get("/subscribers", response_model=List[Subscriber])
 def get_subscribers(db: Session = Depends(get_db)):

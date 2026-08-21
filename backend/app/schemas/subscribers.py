@@ -13,3 +13,10 @@ class Subscriber(SubscriberBase):
     timestamp: datetime
 
     model_config = {"from_attributes": True}
+
+
+class SubscribeResponse(BaseModel):
+    status: str = "success"
+    message: str = "Thank you for subscribing! A welcome email has been sent."
+    email: str
+
