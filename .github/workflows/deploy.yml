@@ -37,5 +37,5 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           port: 21
           security: loose
-          server-dir: ./public_html/
+          server-dir: domains/iucee.hitam.org/public_html/
           local-dir: ./out/
