@@ -1,3 +1,14 @@
+# Disable LiteSpeed / Hostinger server-side caching
+<IfModule LiteSpeed>
+  CacheLookup off
+</IfModule>
+
+<IfModule mod_headers.c>
+  Header set Cache-Control "no-cache, no-store, must-revalidate, max-age=0"
+  Header set Pragma "no-cache"
+  Header set Expires "0"
+</IfModule>
+
 DirectoryIndex index.html index.htm
 
 # Fallback error handlers - routes 403/404 directly to the SPA instead of server error page
@@ -8,10 +19,10 @@ ErrorDocument 404 /index.html
   RewriteEngine On
   RewriteBase /
 
-  # 1. Force root / to serve index.html directly (bypass any server index.php)
+  # 1. Force root / to serve index.html directly
   RewriteRule ^$ index.html [L]
 
-  # 2. Redirect any legacy /index.php requests to /
+  # 2. Redirect legacy /index.php requests to /
   RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+index\.php [NC]
   RewriteRule ^index\.php$ / [R=301,L]
 

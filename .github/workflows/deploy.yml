@@ -43,8 +43,6 @@ jobs:
           set ftp:ssl-allow no
           set net:timeout 15
           set net:max-retries 3
-          rm -f index.php wp-config.php xmlrpc.php wp-login.php
-          rm -rf wp-admin wp-includes wp-content domains
           mirror --reverse --delete --verbose --parallel=10 ./out/ ./
           quit
           EOF
