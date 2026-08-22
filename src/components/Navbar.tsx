@@ -59,7 +59,7 @@ export default function Navbar() {
         activeKeys.has("KeyE")
       ) {
         activeKeys.clear();
-        window.location.href = "/admin";
+        window.location.href = "/admin/";
       }
     };
 
