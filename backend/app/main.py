@@ -164,10 +164,26 @@ app = FastAPI(
     version="1.0.0",
 )
 
-# CORS — supports exact origins, wildcard '*', and all Vercel domains
-origins = settings.allowed_origins
+# CORS — explicitly support hitam.org, localhost, onrender, and Vercel domains
+default_origins = [
+    "https://iucee.hitam.org",
+    "http://iucee.hitam.org",
+    "https://www.iucee.hitam.org",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+    "http://localhost:8000",
+    "http://127.0.0.1:8000",
+]
 
-if "*" in origins:
+configured_origins = [
+    origin.strip().rstrip("/")
+    for origin in settings.allowed_origins
+    if origin.strip()
+]
+
+all_origins = list(set(default_origins + configured_origins))
+
+if "*" in all_origins or "*" in settings.frontend_url:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],
@@ -178,8 +194,8 @@ if "*" in origins:
 else:
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=origins,
-        allow_origin_regex=r"https://.*\.vercel\.app",
+        allow_origins=all_origins,
+        allow_origin_regex=r"https?://.*\.hitam\.org|https?://.*\.vercel\.app|https?://.*\.onrender\.com",
         allow_credentials=True,
         allow_methods=["*"],
         allow_headers=["*"],
