@@ -3,6 +3,7 @@
 import { useRef, useEffect, useState } from "react";
 import LightLines from "@/components/LightLines";
 import EventContainer from "@/components/EventContainer";
+import { API_URL } from "@/lib/api";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -33,8 +34,7 @@ export default function EventsPage() {
   useEffect(() => {
     const fetchEvents = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiUrl}/events`);
+        const res = await fetch(`${API_URL}/events`);
         if (!res.ok) throw new Error("Failed to fetch events");
         const data = await res.json();
         

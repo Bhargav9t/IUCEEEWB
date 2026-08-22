@@ -1,6 +1,8 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
+import { API_URL } from "@/lib/api";
 import { 
   Calendar, Mail, Send, Plus, Trash2, Edit2, 
   Sparkles, CheckCircle2, AlertTriangle, Key, 
@@ -127,8 +129,7 @@ export default function AdminDashboard() {
   // ── API FETCHES ──────────────────────────────────────────────────
   const fetchEvents = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/admin/events`, {
+      const res = await fetch(`${API_URL}/admin/events`, {
         headers: { "X-Admin-Key": adminKey }
       });
       if (res.ok) {
@@ -142,8 +143,7 @@ export default function AdminDashboard() {
 
   const fetchJourneyNodes = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/journey-nodes`);
+      const res = await fetch(`${API_URL}/journey-nodes`);
       if (res.ok) {
         const data = await res.json();
         setJourneyNodes(data);
@@ -155,8 +155,7 @@ export default function AdminDashboard() {
 
   const fetchSubscribers = async () => {
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/subscribers`);
+      const res = await fetch(`${API_URL}/subscribers`);
       if (res.ok) {
         const data = await res.json();
         setSubscribers(data);
@@ -177,10 +176,9 @@ export default function AdminDashboard() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const url = editingEventId 
-        ? `${apiUrl}/admin/events/${editingEventId}` 
-        : `${apiUrl}/admin/events`;
+        ? `${API_URL}/admin/events/${editingEventId}` 
+        : `${API_URL}/admin/events`;
       const method = editingEventId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -239,8 +237,7 @@ export default function AdminDashboard() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/admin/events/${id}`, {
+      const res = await fetch(`${API_URL}/admin/events/${id}`, {
         method: "DELETE",
         headers: { "X-Admin-Key": adminKey }
       });
@@ -264,10 +261,9 @@ export default function AdminDashboard() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const url = editingNodeId 
-        ? `${apiUrl}/admin/journey-nodes/${editingNodeId}` 
-        : `${apiUrl}/admin/journey-nodes`;
+        ? `${API_URL}/admin/journey-nodes/${editingNodeId}` 
+        : `${API_URL}/admin/journey-nodes`;
       const method = editingNodeId ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -321,8 +317,7 @@ export default function AdminDashboard() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/admin/journey-nodes/${nodeId}`, {
+      const res = await fetch(`${API_URL}/admin/journey-nodes/${nodeId}`, {
         method: "DELETE",
         headers: { "X-Admin-Key": adminKey }
       });
@@ -383,7 +378,6 @@ export default function AdminDashboard() {
     setErrorMsg("");
     setSuccessMsg("");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
       const formData = new FormData();
       formData.append("subject", newsletterForm.subject);
       formData.append("body", newsletterForm.body);
@@ -391,7 +385,7 @@ export default function AdminDashboard() {
         formData.append("attachment", newsletterFile);
       }
 
-      const res = await fetch(`${apiUrl}/admin/send-newsletter`, {
+      const res = await fetch(`${API_URL}/admin/send-newsletter`, {
         method: "POST",
         headers: {
           "X-Admin-Key": adminKey

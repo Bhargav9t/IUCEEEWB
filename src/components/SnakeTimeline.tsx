@@ -6,6 +6,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import * as Lucide from "lucide-react";
 import RightSideGrid from "./RightSideGrid";
 import { MaskedAvatars } from "@/components/ui/masked-avatars";
+import { API_URL } from "@/lib/api";
 
 const FIRST_TEAM_AVATARS = [
   { avatar: "/images/first-team/aashish.jpg", name: "Aashish" },
@@ -27,8 +28,7 @@ export default function SnakeTimeline({ onSwitchTo3D }: { onSwitchTo3D?: () => v
   useEffect(() => {
     const fetchJourneyNodes = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiUrl}/journey-nodes`);
+        const res = await fetch(`${API_URL}/journey-nodes`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {

@@ -11,6 +11,7 @@ import { useTheme } from "next-themes";
 import * as Lucide from "lucide-react";
 import { MaskedAvatars } from "@/components/ui/masked-avatars";
 import { DEFAULT_JOURNEY_NODES, JourneyNodeData } from "@/data/defaultJourneyNodes";
+import { API_URL } from "@/lib/api";
 
 export type { JourneyNodeData };
 
@@ -661,8 +662,7 @@ export default function Cosmic3DJourney({
 
     const fetchJourneyNodes = async () => {
       try {
-        const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-        const res = await fetch(`${apiUrl}/journey-nodes`);
+        const res = await fetch(`${API_URL}/journey-nodes`);
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {

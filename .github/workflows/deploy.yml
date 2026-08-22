@@ -28,7 +28,8 @@ jobs:
         env:
           API_URL_SECRET: ${{ secrets.NEXT_PUBLIC_API_URL }}
         run: |
-          export NEXT_PUBLIC_API_URL="${API_URL_SECRET:-https://iuceeewb.onrender.com}"
+          RAW_URL="${API_URL_SECRET:-https://iuceeewb.onrender.com}"
+          export NEXT_PUBLIC_API_URL="${RAW_URL%/}"
           npm run build
 
       - name: 🚀 Deploy to Hostinger via FTP (lftp)

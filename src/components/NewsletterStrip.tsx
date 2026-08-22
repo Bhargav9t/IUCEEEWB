@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { Send, CheckCircle2, Loader2 } from "lucide-react";
+import { API_URL } from "@/lib/api";
 
 export default function NewsletterStrip() {
   const [email, setEmail] = useState("");
@@ -14,11 +15,10 @@ export default function NewsletterStrip() {
 
     setStatus("loading");
     try {
-      const apiUrl = process.env.NEXT_PUBLIC_API_URL || "http://localhost:8000";
-      const res = await fetch(`${apiUrl}/subscribe`, {
+      const res = await fetch(`${API_URL}/subscribe`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ email: email.trim().toLowerCase() }),
       });
 
       if (res.ok) {
