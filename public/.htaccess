@@ -1,4 +1,4 @@
-DirectoryIndex index.html
+DirectoryIndex index.html index.htm
 
 # Fallback error handlers - routes 403/404 directly to the SPA instead of server error page
 ErrorDocument 403 /index.html
@@ -8,31 +8,42 @@ ErrorDocument 404 /index.html
   RewriteEngine On
   RewriteBase /
 
-  # 1. Strip .html or .php extensions from legacy URLs
+  # 1. Force root / to serve index.html directly (bypass any server index.php)
+  RewriteRule ^$ index.html [L]
+
+  # 2. Redirect any legacy /index.php requests to /
+  RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/+index\.php [NC]
+  RewriteRule ^index\.php$ / [R=301,L]
+
+  # 3. Strip .html or .php extensions from legacy URLs
   RewriteCond %{THE_REQUEST} ^[A-Z]{3,}\s/([^.]+)\.(html|php) [NC]
   RewriteRule ^ %1/ [R=301,L]
 
-  # 2. Redirect legacy Google Search URLs to new routes
+  # 4. Redirect legacy Google Search URLs to new routes
   RewriteRule ^about-us/?$ /about/ [R=301,L,NC]
   RewriteRule ^core-team.*$ /team/ [R=301,L,NC]
   RewriteRule ^team-2024.*$ /team/ [R=301,L,NC]
   RewriteRule ^contact.*$ /about/ [R=301,L,NC]
   RewriteRule ^innofiesta.*$ /events/ [R=301,L,NC]
 
-  # 3. Direct request to index.html
+  # 5. Direct request to index.html
   RewriteRule ^index\.html$ - [L]
 
-  # 4. If directory is accessed without trailing slash, redirect with trailing slash
+  # 6. If directory is accessed without trailing slash, redirect with trailing slash
   RewriteCond %{REQUEST_FILENAME} -d
   RewriteCond %{REQUEST_URI} !/$
   RewriteRule ^(.*)$ /$1/ [R=301,L]
 
-  # 5. If direct file or directory exists, serve directly
-  RewriteCond %{REQUEST_FILENAME} -f [OR]
-  RewriteCond %{REQUEST_FILENAME} -d
+  # 7. If direct file exists, serve directly
+  RewriteCond %{REQUEST_FILENAME} -f
   RewriteRule ^ - [L]
 
-  # 6. SPA Fallback: rewrite any other non-existent files/directories to root index.html
+  # 8. If directory has index.html, serve it directly
+  RewriteCond %{REQUEST_FILENAME} -d
+  RewriteCond %{REQUEST_FILENAME}/index.html -f
+  RewriteRule ^(.*)$ $1/index.html [L]
+
+  # 9. SPA Fallback: rewrite any other non-existent files/directories to root index.html
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
   RewriteRule . /index.html [L]
