@@ -43,6 +43,6 @@ jobs:
           set ftp:ssl-allow no
           set net:timeout 15
           set net:max-retries 3
-          mirror --reverse --delete --verbose --parallel=10 ./out/ domains/iucee.hitam.org/public_html/
+          mirror --reverse --delete --verbose --parallel=10 ./out/ ./
           quit
           EOF
