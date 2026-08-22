@@ -26,8 +26,10 @@ jobs:
 
       - name: 🏗️ Build application
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'https://iuceeewb.onrender.com' }}
-        run: npm run build
+          API_URL_SECRET: ${{ secrets.NEXT_PUBLIC_API_URL }}
+        run: |
+          export NEXT_PUBLIC_API_URL="${API_URL_SECRET:-https://iuceeewb.onrender.com}"
+          npm run build
 
       - name: 🚀 Deploy to Hostinger via FTP
         uses: SamKirkland/FTP-Deploy-Action@v4.3.5
