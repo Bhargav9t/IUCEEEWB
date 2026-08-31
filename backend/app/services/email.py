@@ -252,7 +252,7 @@ async def send_welcome_email(email: str):
     try:
         response = resend.Emails.send(
             {
-                "from": "IUCEE-EWB HITAM <newsletter@iucee.hitam.org>",
+                "from": f"IUCEE-EWB HITAM <{settings.resend_sender_email}>",
                 "to": email.lower(),
                 "subject": subject,
                 "html": html_content,

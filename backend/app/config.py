@@ -31,10 +31,14 @@ class Settings(BaseSettings):
     @computed_field  # type: ignore[misc]
     @property
     def resend_sender_email(self) -> str:
-        """Returns a valid Resend sender address. Resend rejects unverified public domains (@gmail.com, etc.)."""
-        if self.from_email and not any(self.from_email.lower().endswith(domain) for domain in ["@gmail.com", "@yahoo.com", "@hotmail.com", "@outlook.com"]):
+        """Returns a valid Resend sender address using the verified domain."""
+        if self.from_email and self.from_email != "onboarding@resend.dev":
             return self.from_email
-        return "onboarding@resend.dev"
+        if self.smtp_sender_email and self.smtp_sender_email != "onboarding@resend.dev" and not any(self.smtp_sender_email.lower().endswith(d) for d in ["@gmail.com", "@yahoo.com", "@hotmail.com"]):
+            return self.smtp_sender_email
+        if self.smtp_username and not any(self.smtp_username.lower().endswith(d) for d in ["@gmail.com", "@yahoo.com", "@hotmail.com"]):
+            return self.smtp_username
+        return "ewb@hitam.org"
 
 
     @computed_field  # type: ignore[misc]
