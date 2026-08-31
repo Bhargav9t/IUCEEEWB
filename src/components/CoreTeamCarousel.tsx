@@ -11,17 +11,15 @@ import Image from "next/image";
 import { Linkedin, Mail } from "lucide-react";
 
 const CORE_TEAM = [
-  { id: 1,  name: "Ameena",           role: "President",            image: "/images/team/Testimony_PIcs/Ameena.jpeg", linkedin: "https://www.linkedin.com/in/ameena-begum-mahek-01a148329/", email: "Ameenamahekk@gmail.com" },
-  { id: 2,  name: "Kanishka",         role: "Vice President",       image: "/images/team/Testimony_PIcs/Kanishka.jpeg", linkedin: "https://www.linkedin.com/in/kanishka-chitturi-03482a351/", email: "chitturikanishka@gmail.com" },
-  { id: 3,  name: "Alankrusha",       role: "Secretary",            image: "/images/team/Testimony_PIcs/AlankrushaBhaiyya.jpeg", linkedin: "https://www.linkedin.com/in/alankrusha-bathini-b99544326/", email: "sha020507@gmail.com" },
-  { id: 4,  name: "Jahnavi",          role: "Treasurer",            image: "/images/team/Testimony_PIcs/Jahnavi.jpeg", linkedin: "https://www.linkedin.com/in/jahanavi-gujarathi-28868a383/", email: "gujarathijahanavi@gmail.com" },
-  { id: 5,  name: "Sathvik Varkula",  role: "Project Manager",      image: "/images/team/Testimony_PIcs/Satvik.jpeg", linkedin: "https://www.linkedin.com/in/sathvik-varkula-459790340/", email: "sathvikvarkula.sv@gmail.com" },
-  { id: 6,  name: "Charlson",         role: "Project Manager",      image: "/images/team/Testimony_PIcs/Charlson.jpeg", linkedin: "", email: "charlsonyarasani06@gmail.com" },
-  { id: 7,  name: "Bhargav",          role: "Lead R&D",             image: "/images/team/Testimony_PIcs/Bhargav.jpg",  imageClass: "object-[center_3%]", linkedin: "https://www.linkedin.com/in/bhargav-reddy-6369b732b/", email: "Bhargavreddy9t@gmail.com" },
-  { id: 8,  name: "Yashashwini",      role: "Event Manager",        image: "/images/team/Testimony_PIcs/Yeshashwini.jpeg", linkedin: "https://www.linkedin.com/in/yashaswini-kande-9bb582310/", email: "yashaswinikande@gmail.com" },
-  { id: 9,  name: "Harshith",         role: "PR Lead",              image: "/images/team/Testimony_PIcs/Harshith.jpeg", linkedin: "https://www.linkedin.com/in/harshith-godishela/", email: "harshithreddygodishela@gmail.com" },
-  { id: 10, name: "Nikhil Surya",      role: "Social Media Manager", image: "/images/team/Testimony_PIcs/NikhilSurya.jpeg", linkedin: "", email: "nikhilsurya.839@gmail.com" },
-  { id: 11, name: "Kranthi",          role: "Lead Co-ordinator",    image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg", linkedin: "https://www.linkedin.com/in/kristipati-kranthi-chaitanya-reddy-6a168b330/", email: "4638kranthichaitanyareddy123@gmail.com" },
+  { id: 1, name: "Ameena", role: "President", image: "/images/team/Testimony_PIcs/Ameena.jpeg", linkedin: "https://www.linkedin.com/in/ameena-begum-mahek-01a148329/", email: "Ameenamahekk@gmail.com" },
+  { id: 2, name: "Kanishka", role: "Vice President", image: "/images/team/Testimony_PIcs/Kanishka.jpeg", linkedin: "https://www.linkedin.com/in/kanishka-chitturi-03482a351/", email: "chitturikanishka@gmail.com" },
+  { id: 3, name: "Alankrusha", role: "Secretary", image: "/images/team/Testimony_PIcs/AlankrushaBhaiyya.jpeg", linkedin: "https://www.linkedin.com/in/alankrusha-bathini-b99544326/", email: "sha020507@gmail.com" },
+  { id: 4, name: "Sathvik Varkula", role: "Project Manager", image: "/images/team/Testimony_PIcs/Satvik.jpeg", linkedin: "https://www.linkedin.com/in/sathvik-varkula-459790340/", email: "sathvikvarkula.sv@gmail.com" },
+  { id: 5, name: "Charlson", role: "Project Manager", image: "/images/team/Testimony_PIcs/Charlson.jpeg", linkedin: "", email: "charlsonyarasani06@gmail.com" },
+  { id: 6, name: "Bhargav", role: "Lead R&D", image: "/images/team/Testimony_PIcs/Bhargav.jpg", imageClass: "object-[center_3%]", linkedin: "https://www.linkedin.com/in/bhargav-reddy-6369b732b/", email: "Bhargavreddy9t@gmail.com" },
+  { id: 7, name: "Yashashwini", role: "Event Manager", image: "/images/team/Testimony_PIcs/Yeshashwini.jpeg", linkedin: "https://www.linkedin.com/in/yashaswini-kande-9bb582310/", email: "yashaswinikande@gmail.com" },
+  { id: 8, name: "Harshith", role: "PR Lead", image: "/images/team/Testimony_PIcs/Harshith.jpeg", linkedin: "https://www.linkedin.com/in/harshith-godishela/", email: "harshithreddygodishela@gmail.com" },
+  { id: 9, name: "Kranthi", role: "Lead Co-ordinator", image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg", linkedin: "https://www.linkedin.com/in/kristipati-kranthi-chaitanya-reddy-6a168b330/", email: "4638kranthichaitanyareddy123@gmail.com" },
 ];
 
 const CARD_W  = 220;
