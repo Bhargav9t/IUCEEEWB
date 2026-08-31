@@ -12,19 +12,67 @@ if settings.resend_api_key:
     resend.api_key = settings.resend_api_key
 
 
+import socket
+import ssl
+
 def _get_smtp_server():
-    """Helper to connect, authenticate, and return an active SMTP server object."""
-    host = settings.smtp_host or "smtp.gmail.com"
-    port = settings.smtp_port or 587
+    """Helper to connect, authenticate, and return an active SMTP server object with IPv4 fallback."""
+    host = settings.smtp_host or "smtp.hostinger.com"
+    port = int(settings.smtp_port or 465)
+    username = settings.smtp_username
+    password = settings.smtp_password
 
-    if port == 465:
-        server = smtplib.SMTP_SSL(host, port)
-    else:
-        server = smtplib.SMTP(host, port)
-        server.starttls()
+    # Try configured port first, then try the other standard SMTP port as fallback
+    ports_to_try = [port]
+    if port == 465 and 587 not in ports_to_try:
+        ports_to_try.append(587)
+    elif port == 587 and 465 not in ports_to_try:
+        ports_to_try.append(465)
 
-    server.login(settings.smtp_username, settings.smtp_password)
-    return server
+    last_error = None
+
+    for current_port in ports_to_try:
+        # 1. Try resolving IPv4 addresses first to avoid Errno 101 on IPv6-disabled cloud containers (Render)
+        target_ips = []
+        try:
+            addr_info = socket.getaddrinfo(host, current_port, socket.AF_INET, socket.SOCK_STREAM)
+            for item in addr_info:
+                ip = item[4][0]
+                if ip not in target_ips:
+                    target_ips.append(ip)
+        except Exception:
+            pass
+
+        # Fallback to hostname if DNS resolution had issues
+        if not target_ips:
+            target_ips = [host]
+
+        for target in target_ips:
+            try:
+                print(f"[SMTP] Attempting connection to {host} ({target}) on port {current_port}...", flush=True)
+                if current_port == 465:
+                    context = ssl.create_default_context()
+                    raw_sock = socket.create_connection((target, current_port), timeout=25)
+                    ssl_sock = context.wrap_socket(raw_sock, server_hostname=host)
+                    server = smtplib.SMTP_SSL(timeout=25)
+                    server.sock = ssl_sock
+                    server.file = ssl_sock.makefile('rb')
+                    server.ehlo()
+                else:
+                    server = smtplib.SMTP(target, current_port, timeout=25)
+                    server.ehlo()
+                    context = ssl.create_default_context()
+                    server.starttls(context=context)
+                    server.ehlo()
+
+                server.login(username, password)
+                print(f"[SMTP] Successfully connected and authenticated on port {current_port}", flush=True)
+                return server
+            except Exception as e:
+                last_error = e
+                print(f"[SMTP] Connection failed on {target}:{current_port} ({e})", flush=True)
+
+    raise last_error
 
 
 def send_email_via_smtp(to_email: str, subject: str, html_content: str, attachment_data: dict = None) -> bool:
