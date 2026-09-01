@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Inter, Nunito } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -41,6 +42,7 @@ export default function RootLayout({
           <main className="flex-grow">{children}</main>
           <Footer />
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
