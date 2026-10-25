@@ -8,12 +8,13 @@ const CORE_TEAM = [
   { id: 1, name: "Ameena", role: "President", image: "/images/team/Testimony_PIcs/Ameena.jpeg" },
   { id: 2, name: "Kanishka", role: "Vice President", image: "/images/team/Testimony_PIcs/Kanishka.jpeg" },
   { id: 3, name: "Alankrusha", role: "Secretary", image: "/images/team/Testimony_PIcs/AlankrushaBhaiyya.jpeg" },
-  { id: 4, name: "Sathvik Varkula", role: "Project Manager", image: "/images/team/Testimony_PIcs/Satvik.jpeg" },
-  { id: 5, name: "Charlson", role: "Project Manager", image: "/images/team/Testimony_PIcs/Charlson.jpeg" },
+  { id: 4, name: "Harshith Gourishetti", role: "Treasurer", image: "/images/team/Testimony_PIcs/Harshit_Anna.jpeg" },
+  { id: 5, name: "Sathvik Varkula", role: "Project Manager", image: "/images/team/Testimony_PIcs/Satvik.jpeg" },
   { id: 6, name: "Bhargav", role: "Lead R&D", image: "/images/team/Testimony_PIcs/Bastard.jpeg", imagePosition: "50% 3%" },
   { id: 7, name: "Yashashwini", role: "Event Manager", image: "/images/team/Testimony_PIcs/Yeshashwini.jpeg" },
   { id: 8, name: "Harshith", role: "PR Lead", image: "/images/team/Testimony_PIcs/Harshith.jpeg" },
-  { id: 9, name: "Kranthi", role: "Lead Co-ordinator", image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg" },
+  { id: 9, name: "Harshith Arava", role: "jr.PR", image: "/images/team/Testimony_PIcs/HarshithArava.jpg", imagePosition: "50% 20%" },
+  { id: 10, name: "Kranthi", role: "Lead Co-ordinator", image: "/images/team/Testimony_PIcs/KranthiAnna.jpeg" },
 ];
 
 // ─── Geometry helpers ─────────────────────────────────────────────────────────
