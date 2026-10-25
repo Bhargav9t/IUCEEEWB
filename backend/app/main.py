@@ -14,11 +14,18 @@ Base.metadata.create_all(bind=engine)
 
 startup_logs = []
 
-# Dynamic Migration: Add registration_url column to events if missing (compatible with SQLite & Postgres)
+# Dynamic Migration: Add missing columns to events and journey_nodes (compatible with SQLite & Postgres)
 def run_migrations():
     should_recreate_journey = False
     try:
         is_postgres = "postgresql" in str(engine.url)
+        event_cols = {
+            "registration_url": "VARCHAR",
+            "category": "VARCHAR",
+            "status": "VARCHAR",
+            "external_url": "VARCHAR",
+            "is_featured": "BOOLEAN DEFAULT 0"
+        }
         with engine.begin() as conn:
             if is_postgres:
                 # Check for outdated columns in journey_nodes
@@ -30,15 +37,14 @@ def run_migrations():
                     conn.execute(text("DROP TABLE journey_nodes CASCADE;"))
                     should_recreate_journey = True
                 else:
-                    # Check column existence in PostgreSQL for events table
-                    res = conn.execute(text(
-                        "SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='registration_url';"
-                    )).fetchone()
-                    if not res:
-                        startup_logs.append("Migration: Adding registration_url column to events table in Postgres")
-                        conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
-                    else:
-                        startup_logs.append("Migration check: registration_url already exists in Postgres")
+                    # Check and add columns for events in Postgres
+                    for col, col_type in event_cols.items():
+                        res_col = conn.execute(text(
+                            f"SELECT column_name FROM information_schema.columns WHERE table_name='events' AND column_name='{col}';"
+                        )).fetchone()
+                        if not res_col:
+                            startup_logs.append(f"Migration: Adding {col} column to events table in Postgres")
+                            conn.execute(text(f"ALTER TABLE events ADD COLUMN {col} {col_type};"))
 
                     # Check and add columns for journey_nodes in Postgres
                     journey_cols = {
@@ -71,11 +77,10 @@ def run_migrations():
                     # Check column existence in SQLite for events table
                     res = conn.execute(text("PRAGMA table_info(events);")).fetchall()
                     columns = [row[1] for row in res]
-                    if "registration_url" not in columns:
-                        startup_logs.append("Migration: Adding registration_url column to events table in SQLite")
-                        conn.execute(text("ALTER TABLE events ADD COLUMN registration_url VARCHAR;"))
-                    else:
-                        startup_logs.append("Migration check: registration_url already exists in SQLite")
+                    for col, col_type in event_cols.items():
+                        if col not in columns:
+                            startup_logs.append(f"Migration: Adding {col} column to events table in SQLite")
+                            conn.execute(text(f"ALTER TABLE events ADD COLUMN {col} {col_type};"))
 
                     # Check and add columns for journey_nodes in SQLite
                     res_journey = conn.execute(text("PRAGMA table_info(journey_nodes);")).fetchall()
@@ -157,6 +162,44 @@ def seed_journey():
         db.close()
 
 seed_journey()
+
+# Seeding Logic: Seed default events if table is empty
+def seed_events():
+    from app.models.events import Event
+    from datetime import datetime, timezone
+    db = SessionLocal()
+    try:
+        count = db.query(Event).count()
+        startup_logs.append(f"Event count check: found {count} events in database")
+        if count == 0:
+            startup_logs.append("Seeding default events...")
+            print("Seeding default events...")
+            default_events = [
+                {
+                    "title": "Innofiesta 2026",
+                    "description": "HITAM's premier annual innovation, technology, and engineering fiesta featuring hackathons, project expos, workshops, and tech talks.",
+                    "date": datetime(2026, 11, 13, 9, 0, 0, tzinfo=timezone.utc),
+                    "location": "HITAM Campus, Hyderabad",
+                    "category": "Flagship Fest",
+                    "status": "Upcoming",
+                    "external_url": "https://innofiesta.hitam.org",
+                    "is_featured": True,
+                    "registration_url": None,
+                    "image_url": None
+                }
+            ]
+            for e in default_events:
+                db.add(Event(**e))
+            db.commit()
+            startup_logs.append("Successfully seeded default events.")
+            print("Successfully seeded default events.")
+    except Exception as e:
+        startup_logs.append(f"Event seeding warning: {str(e)}")
+        print("Event seeding warning:", e)
+    finally:
+        db.close()
+
+seed_events()
 
 app = FastAPI(
     title="IUCEE-EWB HITAM Backend",

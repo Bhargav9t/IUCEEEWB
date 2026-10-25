@@ -25,6 +25,10 @@ interface Event {
   image_url?: string;
   location?: string;
   registration_url?: string;
+  category?: string;
+  status?: string;
+  external_url?: string | null;
+  is_featured?: boolean;
 }
 
 interface JourneyNode {
@@ -63,7 +67,11 @@ export default function AdminDashboard() {
     date: "",
     image_url: "",
     location: "",
-    registration_url: ""
+    registration_url: "",
+    category: "",
+    status: "Upcoming",
+    external_url: "",
+    is_featured: false
   });
 
   // Journey Node Form state
@@ -186,6 +194,10 @@ export default function AdminDashboard() {
         headers: getHeaders(),
         body: JSON.stringify({
           ...eventForm,
+          external_url: eventForm.external_url || null,
+          category: eventForm.category || null,
+          status: eventForm.status || "Upcoming",
+          is_featured: Boolean(eventForm.is_featured),
           // Format ISO date
           date: new Date(eventForm.date).toISOString()
         })
@@ -199,7 +211,11 @@ export default function AdminDashboard() {
           date: "",
           image_url: "",
           location: "",
-          registration_url: ""
+          registration_url: "",
+          category: "",
+          status: "Upcoming",
+          external_url: "",
+          is_featured: false
         });
         setEditingEventId(null);
         fetchEvents();
@@ -227,7 +243,11 @@ export default function AdminDashboard() {
       date: localISOTime,
       image_url: evt.image_url || "",
       location: evt.location || "",
-      registration_url: evt.registration_url || ""
+      registration_url: evt.registration_url || "",
+      category: evt.category || "",
+      status: evt.status || "Upcoming",
+      external_url: evt.external_url || "",
+      is_featured: Boolean(evt.is_featured)
     });
   };
 
@@ -614,6 +634,51 @@ export default function AdminDashboard() {
                   />
                 </div>
 
+                <div>
+                  <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Category (Optional)</label>
+                  <input
+                    type="text"
+                    placeholder="e.g. Flagship Fest, Workshop, Hackathon"
+                    value={eventForm.category}
+                    onChange={(e) => setEventForm({ ...eventForm, category: e.target.value })}
+                    className="w-full text-sm px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">External Website URL (Optional)</label>
+                  <input
+                    type="url"
+                    placeholder="e.g. https://innofiesta.hitam.org"
+                    value={eventForm.external_url}
+                    onChange={(e) => setEventForm({ ...eventForm, external_url: e.target.value })}
+                    className="w-full text-sm px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold uppercase text-zinc-400 mb-1">Status</label>
+                  <select
+                    value={eventForm.status}
+                    onChange={(e) => setEventForm({ ...eventForm, status: e.target.value })}
+                    className="w-full text-sm px-3.5 py-2.5 rounded-xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 text-zinc-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-emerald-500/40"
+                  >
+                    <option value="Upcoming">Upcoming</option>
+                    <option value="Ongoing">Ongoing</option>
+                    <option value="Completed">Completed</option>
+                  </select>
+                </div>
+                <div className="flex items-center gap-2 pt-1">
+                  <input
+                    type="checkbox"
+                    id="is_featured"
+                    checked={eventForm.is_featured}
+                    onChange={(e) => setEventForm({ ...eventForm, is_featured: e.target.checked })}
+                    className="w-4 h-4 rounded text-emerald-600 focus:ring-emerald-500"
+                  />
+                  <label htmlFor="is_featured" className="text-xs font-bold uppercase text-zinc-400 cursor-pointer">
+                    Highlight as Flagship / Featured Event
+                  </label>
+                </div>
+
                 <div className="flex gap-2 mt-2">
                   <button
                     type="submit"
@@ -627,7 +692,7 @@ export default function AdminDashboard() {
                       type="button"
                       onClick={() => {
                         setEditingEventId(null);
-                        setEventForm({ title: "", description: "", date: "", image_url: "", location: "", registration_url: "" });
+                        setEventForm({ title: "", description: "", date: "", image_url: "", location: "", registration_url: "", category: "", status: "Upcoming", external_url: "", is_featured: false });
                       }}
                       className="px-4 py-3 rounded-xl bg-zinc-200 dark:bg-white/10 text-zinc-700 dark:text-zinc-300 font-semibold text-sm transition-colors cursor-pointer"
                     >

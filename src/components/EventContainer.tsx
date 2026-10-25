@@ -12,14 +12,14 @@ interface EventContainerProps {
 
 export default function EventContainer({ events }: EventContainerProps) {
   // Number of regular grid cards to show initially
-  const INITIAL_COUNT = 2;
+  const INITIAL_COUNT = 6;
   const LOAD_MORE_COUNT = 6;
   
   const [displayCount, setDisplayCount] = useState(INITIAL_COUNT);
 
   // Process and sort events purely on the client via useMemo
   const { featuredEvent, gridEvents } = useMemo(() => {
-    // 1. Sort all events chronologically (oldest to newest)
+    // 1. Sort all events chronologically
     const sorted = [...events].sort((a, b) => {
       return new Date(a.date).getTime() - new Date(b.date).getTime();
     });
@@ -27,7 +27,10 @@ export default function EventContainer({ events }: EventContainerProps) {
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // 2. Find the closest upcoming event
+    // 2. Check for an explicitly featured flagship event
+    const explicitlyFeaturedIndex = sorted.findIndex((e) => e.isFeatured);
+
+    // 3. Fallback: Find the closest upcoming event
     const upcomingIndex = sorted.findIndex(
       (e) => new Date(e.date).getTime() >= today.getTime()
     );
@@ -35,13 +38,22 @@ export default function EventContainer({ events }: EventContainerProps) {
     let featured: EventData | null = null;
     let grid: EventData[] = [];
 
-    if (upcomingIndex !== -1) {
+    if (explicitlyFeaturedIndex !== -1) {
+      featured = sorted[explicitlyFeaturedIndex];
+      const remaining = sorted.filter((_, idx) => idx !== explicitlyFeaturedIndex);
+      // Ensure any additional featured events are sorted to the very top of the grid
+      grid = [...remaining].sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        const aUpcoming = new Date(a.date).getTime() >= today.getTime();
+        const bUpcoming = new Date(b.date).getTime() >= today.getTime();
+        if (aUpcoming && !bUpcoming) return -1;
+        if (!aUpcoming && bUpcoming) return 1;
+        return new Date(a.date).getTime() - new Date(b.date).getTime();
+      });
+    } else if (upcomingIndex !== -1) {
       // If we found an upcoming event, make it featured
       featured = sorted[upcomingIndex];
-      // Grid gets everything else (we might want just future events, or all remaining)
-      // Let's show all other future events + maybe past events? 
-      // Typically, an "upcoming events" tab only shows future events.
-      // Assuming context: events array only contains strictly what we want to render.
       grid = sorted.filter((_, idx) => idx !== upcomingIndex);
     } else if (sorted.length > 0) {
       // Fallback: If no future events exist, feature the most recent past event

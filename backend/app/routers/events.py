@@ -19,7 +19,9 @@ def create_event(
     db: Session = Depends(get_db),
     admin: None = Depends(verify_admin_key),
 ):
-    db_event = EventModel(**event.model_dump())
+    valid_cols = {c.name for c in EventModel.__table__.columns}
+    event_data = {k: v for k, v in event.model_dump().items() if k in valid_cols}
+    db_event = EventModel(**event_data)
     db.add(db_event)
     db.commit()
     db.refresh(db_event)
@@ -51,8 +53,10 @@ def update_event(
     if not db_event:
         raise HTTPException(status_code=404, detail="Event not found")
     
+    valid_cols = {c.name for c in EventModel.__table__.columns}
     for key, value in event_update.model_dump().items():
-        setattr(db_event, key, value)
+        if key in valid_cols:
+            setattr(db_event, key, value)
         
     db.commit()
     db.refresh(db_event)

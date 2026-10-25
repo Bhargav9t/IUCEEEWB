@@ -1,1 +1,13 @@
-[]
+[
+  {
+    "id": "innofiesta-2026",
+    "title": "Innofiesta 2026",
+    "category": "Flagship Fest",
+    "status": "Upcoming",
+    "isFeatured": true,
+    "externalUrl": "https://innofiesta.hitam.org",
+    "description": "HITAM's premier annual innovation, technology, and engineering fiesta featuring hackathons, project expos, workshops, and tech talks.",
+    "date": "2026-11-13T09:00:00Z",
+    "location": "HITAM Campus, Hyderabad"
+  }
+]

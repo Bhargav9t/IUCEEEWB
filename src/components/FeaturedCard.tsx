@@ -1,6 +1,6 @@
 "use client";
 
-import { Calendar, ArrowRight, Zap } from "lucide-react";
+import { Calendar, ArrowRight, Zap, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import { EventData } from "./EventCard";
@@ -42,11 +42,28 @@ export default function FeaturedCard({ event }: FeaturedCardProps) {
         )}
 
         {/* Feature Badge */}
-        <div className="absolute top-6 left-6 z-20">
+        <div className="absolute top-6 left-6 z-20 flex items-center gap-2">
           <span className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/20 backdrop-blur-md border border-emerald-500/30 text-emerald-400 text-xs font-bold uppercase tracking-wider shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+            <span className="relative flex h-2 w-2 mr-0.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+            </span>
             <Zap size={14} className="fill-emerald-400 text-emerald-400 animate-pulse" />
-            Next Up
+            {event.category || (event.isFeatured ? "Featured Fest" : "Flagship Feature")}
+            {event.isFeatured && (
+              <span className="relative inline-flex items-center ml-1">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-[3px] bg-red-500 opacity-60 -skew-x-6" />
+                <span className="relative inline-flex items-center justify-center w-3.5 h-3.5 bg-red-600 text-white font-black text-[10px] rounded-[3px] shadow-[0_0_8px_rgba(239,68,68,0.7)] -skew-x-6 leading-none select-none italic">
+                  !
+                </span>
+              </span>
+            )}
           </span>
+          {event.status && (
+            <span className="inline-flex items-center px-2.5 py-1 rounded-full bg-white/10 backdrop-blur-md border border-white/20 text-white text-[11px] font-semibold uppercase tracking-wider">
+              {event.status}
+            </span>
+          )}
         </div>
 
         <div className="absolute bottom-6 left-6 flex items-center gap-2 px-4 py-2 rounded-xl bg-black/60 backdrop-blur-md border border-emerald-500/30 text-emerald-50 text-sm font-semibold z-20 shadow-lg group-hover:border-emerald-400/50 transition-colors">
@@ -69,18 +86,37 @@ export default function FeaturedCard({ event }: FeaturedCardProps) {
         </p>
 
         <div className="mt-auto relative z-10 flex flex-wrap items-center gap-4">
+          {event.externalUrl && (
+            <a
+              href={event.externalUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => e.stopPropagation()}
+              className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 cursor-pointer"
+            >
+              <span className="relative z-10 flex items-center gap-2">
+                Visit Official Site
+                <ExternalLink size={18} className="group-hover/btn:translate-x-1 group-hover/btn:-translate-y-0.5 transition-transform" />
+              </span>
+              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
+            </a>
+          )}
           {event.registration_url && (
             <a
               href={event.registration_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-emerald-600 text-white font-bold hover:bg-emerald-500 transition-all duration-300 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)] hover:-translate-y-0.5 cursor-pointer"
+              onClick={(e) => e.stopPropagation()}
+              className={`group/btn relative overflow-hidden inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl ${
+                event.externalUrl
+                  ? "border border-zinc-200 bg-white/40 dark:bg-white/[0.02] text-zinc-800 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 font-bold hover:bg-emerald-50/50 hover:border-emerald-500/30 dark:hover:bg-emerald-950/20 dark:hover:border-emerald-500/30"
+                  : "bg-emerald-600 text-white font-bold hover:bg-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.3)] hover:shadow-[0_0_30px_rgba(16,185,129,0.6)]"
+              } transition-all duration-300 hover:-translate-y-0.5 cursor-pointer`}
             >
               <span className="relative z-10 flex items-center gap-2">
                 Register Now
                 <ArrowRight size={18} className="group-hover/btn:translate-x-1 transition-transform" />
               </span>
-              <div className="absolute inset-0 bg-gradient-to-r from-emerald-400 to-emerald-500 opacity-0 group-hover/btn:opacity-100 transition-opacity duration-300" />
             </a>
           )}
           {event.poster && (
@@ -93,7 +129,7 @@ export default function FeaturedCard({ event }: FeaturedCardProps) {
               View Poster
             </a>
           )}
-          {!event.registration_url && !event.poster && (
+          {!event.externalUrl && !event.registration_url && !event.poster && (
             <button
               disabled
               className="inline-flex items-center justify-center gap-2 px-8 py-4 rounded-xl bg-zinc-200 text-zinc-400 font-bold cursor-not-allowed dark:bg-white/5 dark:text-zinc-600"

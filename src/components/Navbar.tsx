@@ -85,7 +85,7 @@ export default function Navbar() {
     { href: "/",        label: "Home" },
     { href: "/about",   label: "About" },
     { href: "/team",    label: "Our Team" },
-    { href: "/events",  label: "Upcoming Events" },
+    { href: "/events",  label: "Upcoming Events", hasBadge: true },
     { href: "/projects", label: "Projects" },
     { href: "/history", label: "Our Journey" },
   ];
@@ -148,7 +148,17 @@ export default function Navbar() {
                       transition={{ type: "spring", stiffness: 350, damping: 30 }}
                     />
                   )}
-                  <span className="relative z-10">{link.label}</span>
+                  <span className="relative z-10 flex items-center gap-1.5">
+                    {link.label}
+                    {link.hasBadge && (
+                      <span className="relative inline-flex items-center ml-0.5">
+                        <span className="animate-ping absolute inline-flex h-full w-full rounded-[3px] bg-red-500 opacity-60 -skew-x-6" />
+                        <span className="relative inline-flex items-center justify-center w-3.5 h-3.5 bg-red-600 text-white font-black text-[10px] rounded-[3px] shadow-[0_0_8px_rgba(239,68,68,0.7)] -skew-x-6 leading-none select-none italic">
+                          !
+                        </span>
+                      </span>
+                    )}
+                  </span>
                 </Link>
               );
             })}
@@ -157,7 +167,6 @@ export default function Navbar() {
           {/* Right Action & Mobile Toggle */}
           <div className="flex items-center gap-4 z-20">
             <ThemeToggle />
-
 
             <button
               onClick={() => setIsOpen(!isOpen)}
@@ -200,17 +209,25 @@ export default function Navbar() {
                 >
                   <Link
                     href={link.href}
-                    className={`block text-3xl font-bold py-4 border-b border-zinc-100 dark:border-white/10 transition-colors ${
+                    className={`flex items-center justify-between text-3xl font-bold py-4 border-b border-zinc-100 dark:border-white/10 transition-colors ${
                       pathname === link.href ? "text-emerald-600 dark:text-emerald-400" : "text-zinc-700 hover:text-black dark:text-zinc-300 dark:hover:text-white"
                     }`}
                   >
-                    {link.label}
+                    <span className="flex items-center gap-3">
+                      {link.label}
+                      {link.hasBadge && (
+                        <span className="relative inline-flex items-center">
+                          <span className="animate-ping absolute inline-flex h-full w-full rounded-[4px] bg-red-500 opacity-60 -skew-x-6" />
+                          <span className="relative inline-flex items-center justify-center w-5 h-5 bg-red-600 text-white font-black text-xs rounded-[4px] shadow-[0_0_10px_rgba(239,68,68,0.7)] -skew-x-6 leading-none select-none italic">
+                            !
+                          </span>
+                        </span>
+                      )}
+                    </span>
                   </Link>
                 </motion.div>
               ))}
             </div>
-            
-
           </motion.div>
         )}
       </AnimatePresence>

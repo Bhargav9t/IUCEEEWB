@@ -4,6 +4,8 @@ import { useRef, useEffect, useState } from "react";
 import LightLines from "@/components/LightLines";
 import EventContainer from "@/components/EventContainer";
 import { API_URL } from "@/lib/api";
+import defaultEvents from "@/data/events.json";
+import { INNOFIESTA_URL } from "@/config/events";
 
 function Reveal({ children, delay = 0, className = "" }: { children: React.ReactNode; delay?: number; className?: string }) {
   const ref = useRef<HTMLDivElement>(null);
@@ -27,8 +29,8 @@ function Label({ children }: { children: React.ReactNode }) {
 }
 
 export default function EventsPage() {
-  const [events, setEvents] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
+  const [events, setEvents] = useState<any[]>(defaultEvents);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -38,20 +40,29 @@ export default function EventsPage() {
         if (!res.ok) throw new Error("Failed to fetch events");
         const data = await res.json();
         
-        // Map backend schema (id: int, image_url) to frontend schema (id: string, poster)
-        const mapped = data.map((e: any) => ({
+        // Map backend schema to frontend EventData
+        const mapped = Array.isArray(data) ? data.map((e: any) => ({
           id: String(e.id),
           title: e.title,
           description: e.description || "",
           date: e.date,
+          category: e.category || undefined,
+          status: e.status || undefined,
           poster: e.image_url || undefined,
           registration_url: e.registration_url || undefined,
-        }));
+          externalUrl: e.external_url ?? e.externalUrl ?? (e.title?.toLowerCase().includes("innofiesta") ? INNOFIESTA_URL : null),
+          isFeatured: Boolean(e.is_featured ?? e.isFeatured ?? (e.title?.toLowerCase().includes("innofiesta") ? true : false)),
+        })) : [];
         
-        setEvents(mapped);
+        if (mapped.length > 0) {
+          setEvents(mapped);
+        } else {
+          // Fallback to static events data if backend has no active events
+          setEvents(defaultEvents as any[]);
+        }
       } catch (err) {
-        console.error("Error fetching events:", err);
-        setError("Unable to connect to the backend server.");
+        console.error("Error fetching events, falling back to static data:", err);
+        setEvents(defaultEvents as any[]);
       } finally {
         setLoading(false);
       }
