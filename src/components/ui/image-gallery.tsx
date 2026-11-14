@@ -3,7 +3,6 @@
 import React from 'react';
 import { cn } from '@/lib/utils';
 import { motion, AnimatePresence } from 'framer-motion';
-import { AspectRatio } from '@/components/ui/aspect-ratio';
 import { X, ZoomIn } from 'lucide-react';
 
 interface ImageItem {
@@ -12,53 +11,35 @@ interface ImageItem {
 	alt: string;
 }
 
-
 export function ImageGallery() {
+	// Curated distinct non-repeating photos with randomized scene and subject order
 	const galleryImages: ImageItem[] = [
-		{ src: "/images/events/iasf-gallery/IMG_0752.HEIC.jpg", ratio: 4 / 3, alt: "IASF Showcase Interaction" },
-		{ src: "/images/events/iasf-gallery/IMG_0753.HEIC.jpg", ratio: 3 / 4, alt: "EWB HITAM Display Board" },
-		{ src: "/images/events/iasf-gallery/IMG_0754.HEIC.jpg", ratio: 16 / 9, alt: "Project Demo in Action" },
-		{ src: "/images/events/iasf-gallery/IMG_0755.HEIC.jpg", ratio: 4 / 3, alt: "Delegates Reviewing Projects" },
-		{ src: "/images/events/iasf-gallery/IMG_0756.HEIC.jpg", ratio: 3 / 4, alt: "Students Team Photo" },
-		{ src: "/images/events/iasf-gallery/IMG_0757.HEIC.jpg", ratio: 16 / 9, alt: "Engineering Presentation" },
-		{ src: "/images/events/iasf-gallery/IMG_0758.HEIC.jpg", ratio: 4 / 3, alt: "Mentorship Discussions" },
-		{ src: "/images/events/iasf-gallery/IMG_0762.HEIC.jpg", ratio: 3 / 4, alt: "Project Showcase Setup" },
-		{ src: "/images/events/iasf-gallery/IMG_0772.HEIC.jpg", ratio: 16 / 9, alt: "Team Pitching to Mentors" },
-		{ src: "/images/events/iasf-gallery/IMG_0773.HEIC.jpg", ratio: 4 / 3, alt: "Annual Forum Gathering" },
-		{ src: "/images/events/iasf-gallery/IMG_0774.HEIC.jpg", ratio: 3 / 4, alt: "Prototype Hardware Inspection" },
-		{ src: "/images/events/iasf-gallery/IMG_0775.HEIC.jpg", ratio: 16 / 9, alt: "Mentors Feedback Session" },
-		{ src: "/images/events/iasf-gallery/IMG_0776.HEIC.jpg", ratio: 4 / 3, alt: "EWB Team Presentation" },
-		{ src: "/images/events/iasf-gallery/IMG_0777.HEIC.jpg", ratio: 3 / 4, alt: "Interactive QA Session" },
-		{ src: "/images/events/iasf-gallery/IMG_0778.HEIC.jpg", ratio: 16 / 9, alt: "Delegates Group Discussion" },
 		{ src: "/images/events/iasf-gallery/IMG_0779.HEIC.jpg", ratio: 4 / 3, alt: "Project Review Panel" },
-		{ src: "/images/events/iasf-gallery/IMG_0780.HEIC.jpg", ratio: 3 / 4, alt: "Student Chapter Representatives" },
-		{ src: "/images/events/iasf-gallery/IMG_0781.HEIC.jpg", ratio: 16 / 9, alt: "Technical Session Discussion" },
-		{ src: "/images/events/iasf-gallery/IMG_0782.HEIC.jpg", ratio: 4 / 3, alt: "Project Expo Highlights" },
-		{ src: "/images/events/iasf-gallery/IMG_0783.HEIC.jpg", ratio: 3 / 4, alt: "Hardware Demonstration" },
-		{ src: "/images/events/iasf-gallery/IMG_0785.HEIC.jpg", ratio: 16 / 9, alt: "Student Engagement Forum" },
-		{ src: "/images/events/iasf-gallery/IMG_0786.HEIC.jpg", ratio: 4 / 3, alt: "Innovative Models Display" },
-		{ src: "/images/events/iasf-gallery/IMG_0787.HEIC.jpg", ratio: 3 / 4, alt: "Audience Interaction" },
-		{ src: "/images/events/iasf-gallery/IMG_0788.HEIC.jpg", ratio: 16 / 9, alt: "Mentorship Advice Session" },
-		{ src: "/images/events/iasf-gallery/IMG_0789.HEIC.jpg", ratio: 4 / 3, alt: "Showcase Pitch Deck" },
-		{ src: "/images/events/iasf-gallery/IMG_0790.HEIC.jpg", ratio: 3 / 4, alt: "Chapter Officers and Mentors" },
-		{ src: "/images/events/iasf-gallery/IMG_0793.JPG", ratio: 16 / 9, alt: "IASF Presentation" },
-		{ src: "/images/events/iasf-gallery/IMG_0794.JPG", ratio: 4 / 3, alt: "EWB HITAM Team" },
-		{ src: "/images/events/iasf-gallery/IMG_0795.JPG", ratio: 3 / 4, alt: "IASF Project Pitch" },
-		{ src: "/images/events/iasf-gallery/IMG_0797.HEIC.jpg", ratio: 16 / 9, alt: "Presentation Slide Highlights" },
-		{ src: "/images/events/iasf-gallery/IMG_0798.HEIC.jpg", ratio: 4 / 3, alt: "Evaluation & Grading" },
-		{ src: "/images/events/iasf-gallery/IMG_0799.HEIC.jpg", ratio: 3 / 4, alt: "Prototype Functional Demo" },
-		{ src: "/images/events/iasf-gallery/IMG_0800.HEIC.jpg", ratio: 16 / 9, alt: "EWB HITAM Chapter Showcase" },
-		{ src: "/images/events/iasf-gallery/IMG_0801.HEIC.jpg", ratio: 4 / 3, alt: "Annual Forum Student Showcase" },
-		{ src: "/images/events/iasf-gallery/IMG_0802.HEIC.jpg", ratio: 3 / 4, alt: "Delegates Group Interaction" },
-		{ src: "/images/events/iasf-gallery/IMG_0803.HEIC.jpg", ratio: 16 / 9, alt: "Project Feedback Forum" },
-		{ src: "/images/events/iasf-gallery/IMG_0809.HEIC.jpg", ratio: 4 / 3, alt: "EWB Student Presentations" },
-		{ src: "/images/events/iasf-gallery/IMG_0810.HEIC.jpg", ratio: 3 / 4, alt: "Forum Judges and Mentors" },
-		{ src: "/images/events/iasf-gallery/IMG_0811.HEIC.jpg", ratio: 16 / 9, alt: "Technical Mentorship Round" },
-		{ src: "/images/events/iasf-gallery/IMG_0820.HEIC.jpg", ratio: 4 / 3, alt: "EWB Community Project Showcase" },
-		{ src: "/images/events/iasf-gallery/IMG_0821.HEIC.jpg", ratio: 3 / 4, alt: "Student Engagement and Networking" },
-		{ src: "/images/events/iasf-gallery/IMG_0823.JPG", ratio: 16 / 9, alt: "IASF Interaction Session" },
+		{ src: "/images/events/iasf-gallery/IMG_0754.HEIC.jpg", ratio: 16 / 9, alt: "Project Demo in Action" },
 		{ src: "/images/events/iasf-gallery/IMG_0826.HEIC.jpg", ratio: 4 / 3, alt: "Awards and Recognition Ceremony" },
-		{ src: "/images/events/iasf-gallery/IMG_0827.HEIC.jpg", ratio: 3 / 4, alt: "Closing Remarks and Group Photo" }
+		{ src: "/images/events/iasf-gallery/IMG_0753.HEIC.jpg", ratio: 3 / 4, alt: "EWB HITAM Display Board" },
+		{ src: "/images/events/iasf-gallery/IMG_0793.JPG", ratio: 16 / 9, alt: "IASF Presentation" },
+		{ src: "/images/events/iasf-gallery/IMG_0786.HEIC.jpg", ratio: 4 / 3, alt: "Innovative Models Display" },
+		{ src: "/images/events/iasf-gallery/IMG_0756.HEIC.jpg", ratio: 3 / 4, alt: "Students Team Photo" },
+		{ src: "/images/events/iasf-gallery/IMG_0775.HEIC.jpg", ratio: 16 / 9, alt: "Mentors Feedback Session" },
+		{ src: "/images/events/iasf-gallery/IMG_0820.HEIC.jpg", ratio: 4 / 3, alt: "EWB Community Project Showcase" },
+		{ src: "/images/events/iasf-gallery/IMG_0762.HEIC.jpg", ratio: 3 / 4, alt: "Project Showcase Setup" },
+		{ src: "/images/events/iasf-gallery/IMG_0799.HEIC.jpg", ratio: 3 / 4, alt: "Prototype Functional Demo" },
+		{ src: "/images/events/iasf-gallery/IMG_0772.HEIC.jpg", ratio: 16 / 9, alt: "Team Pitching to Mentors" },
+		{ src: "/images/events/iasf-gallery/IMG_0801.HEIC.jpg", ratio: 4 / 3, alt: "Annual Forum Student Showcase" },
+		{ src: "/images/events/iasf-gallery/IMG_0752.HEIC.jpg", ratio: 4 / 3, alt: "IASF Showcase Interaction" },
+		{ src: "/images/events/iasf-gallery/IMG_0823.JPG", ratio: 16 / 9, alt: "IASF Interaction Session" },
+		{ src: "/images/events/iasf-gallery/IMG_0782.HEIC.jpg", ratio: 4 / 3, alt: "Project Expo Highlights" },
+		{ src: "/images/events/iasf-gallery/IMG_0795.JPG", ratio: 3 / 4, alt: "IASF Project Pitch" },
+		{ src: "/images/events/iasf-gallery/IMG_0757.HEIC.jpg", ratio: 16 / 9, alt: "Engineering Presentation" },
+		{ src: "/images/events/iasf-gallery/IMG_0810.HEIC.jpg", ratio: 3 / 4, alt: "Forum Judges and Mentors" },
+		{ src: "/images/events/iasf-gallery/IMG_0773.HEIC.jpg", ratio: 4 / 3, alt: "Annual Forum Gathering" },
+		{ src: "/images/events/iasf-gallery/IMG_0788.HEIC.jpg", ratio: 16 / 9, alt: "Mentorship Advice Session" },
+		{ src: "/images/events/iasf-gallery/IMG_0798.HEIC.jpg", ratio: 4 / 3, alt: "Evaluation & Grading" },
+		{ src: "/images/events/iasf-gallery/IMG_0790.HEIC.jpg", ratio: 3 / 4, alt: "Chapter Officers and Mentors" },
+		{ src: "/images/events/iasf-gallery/IMG_0827.HEIC.jpg", ratio: 3 / 4, alt: "Closing Remarks and Group Photo" },
+		{ src: "/images/events/iasf-gallery/IMG_0780.HEIC.jpg", ratio: 3 / 4, alt: "Student Chapter Representatives" },
+		{ src: "/images/events/iasf-gallery/IMG_0803.HEIC.jpg", ratio: 16 / 9, alt: "Project Feedback Forum" }
 	];
 
 	const [activeLightboxImage, setActiveLightboxImage] = React.useState<ImageItem | null>(null);
@@ -74,7 +55,7 @@ export function ImageGallery() {
 						<div 
 							key={index} 
 							onClick={() => setActiveLightboxImage(img)}
-							className="break-inside-avoid mb-6 group cursor-pointer overflow-hidden rounded-lg"
+							className="break-inside-avoid mb-6 group cursor-pointer overflow-hidden rounded-xl"
 						>
 							<AnimatedImage
 								alt={img.alt}
@@ -117,7 +98,7 @@ function AnimatedImage({ alt, src }: AnimatedImageProps) {
 			<img
 				alt={alt}
 				src={src}
-				className="w-full h-auto block object-contain transition-all duration-700 ease-in-out group-hover:scale-105"
+				className="w-full h-auto block object-cover transition-all duration-700 ease-in-out group-hover:scale-105"
 				loading="lazy"
 			/>
 		</div>
@@ -185,11 +166,10 @@ function LightboxModal({ image, onClose }: LightboxModalProps) {
 				{/* Image Description Footer */}
 				<div className="mt-4 text-center">
 					<p className="text-emerald-400 text-xs font-bold tracking-widest uppercase">
-						IASF Addressal Ceremony
+						{image.alt}
 					</p>
 				</div>
 			</motion.div>
 		</motion.div>
 	);
 }
-
