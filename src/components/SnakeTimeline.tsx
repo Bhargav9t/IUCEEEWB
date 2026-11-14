@@ -32,7 +32,36 @@ export default function SnakeTimeline() {
         if (res.ok) {
           const data = await res.json();
           if (data && data.length > 0) {
-            setTimelineEvents(data);
+            // Merge backend data with local default nodes so new milestones are never lost
+            const backendNodeIds = new Set(data.map((item: any) => String(item.node_id || item.id)));
+            const backendTitles = new Set(data.map((item: any) => String(item.title).toLowerCase().trim()));
+
+            const missingDefaults = DEFAULT_JOURNEY_NODES.filter(
+              (defNode) =>
+                !backendNodeIds.has(String(defNode.node_id || defNode.id)) &&
+                !backendTitles.has(String(defNode.title).toLowerCase().trim())
+            );
+
+            const nonTerminal = [
+              ...data.filter((d: any) => d.node_id !== "21" && d.title !== "TO BE CONTINUED..."),
+              ...missingDefaults.filter((d: any) => d.node_id !== "21" && d.title !== "TO BE CONTINUED..."),
+            ];
+
+            const toBeContinued = DEFAULT_JOURNEY_NODES.find((n) => n.node_id === "21") || {
+              id: "21",
+              node_id: "21",
+              date: "FUTURE",
+              title: "TO BE CONTINUED...",
+              desc: "Our journey of impact and innovation never stops.",
+              icon: "Hourglass",
+              sort_order: 999,
+            };
+
+            const merged = [...nonTerminal, toBeContinued].sort(
+              (a, b) => (a.sort_order || 99) - (b.sort_order || 99)
+            );
+
+            setTimelineEvents(merged);
           }
         }
       } catch (err) {
