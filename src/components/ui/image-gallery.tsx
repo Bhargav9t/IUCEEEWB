@@ -68,7 +68,7 @@ export function ImageGallery() {
 			{/* True CSS Columns Masonry Grid (Prevents Cropping, Respects Original Resolution) */}
 			<div className="mx-auto w-full max-w-6xl columns-1 sm:columns-2 lg:columns-3 gap-6 space-y-6">
 				{galleryImages.map((img, index) => {
-					const thumbnailSrc = `/_next/image?url=${encodeURIComponent(img.src)}&w=640&q=75`;
+					const thumbnailSrc = encodeURI(img.src);
 
 					return (
 						<div 
@@ -106,7 +106,7 @@ interface AnimatedImageProps {
 
 function AnimatedImage({ alt, src }: AnimatedImageProps) {
 	return (
-		<div className="bg-zinc-100 dark:bg-zinc-900 relative rounded-lg border overflow-hidden dark:border-white/10 shadow-sm transition-all duration-300">
+		<div className="bg-zinc-100 dark:bg-zinc-900 relative rounded-xl border border-zinc-200/80 dark:border-white/10 overflow-hidden shadow-sm transition-all duration-300">
 			{/* Hover overlay effects */}
 			<div className="absolute inset-0 z-10 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-center justify-center backdrop-blur-[2px]">
 				<div className="bg-white/10 border border-white/20 p-3 rounded-full text-white transform scale-90 group-hover:scale-100 transition-transform duration-300">

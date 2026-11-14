@@ -49,7 +49,7 @@ export default function InvestitureCeremonyPage() {
         const fileName = img.split('/').pop() || "";
         const label = fileName.replace(/\.[^/.]+$/, "");
         // Use Next.js built-in image optimization to compress and resize the high-resolution images
-        const optimizedUrl = `/_next/image?url=${encodeURIComponent(img)}&w=640&q=75`;
+        const optimizedUrl = encodeURI(img);
         return { image: optimizedUrl, text: label, originalImage: img };
     });
 
