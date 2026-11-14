@@ -10,22 +10,16 @@ import {
   Sparkles, 
   Users, 
   ArrowDown, 
-  Maximize2, 
-  X,
-  ChevronLeft,
-  ChevronRight,
-  Sliders,
-  CheckCircle2,
-  Calendar,
-  Layers
+  ChevronLeft, 
+  ChevronRight, 
+  CheckCircle2 
 } from "lucide-react";
 import FlatGrid from "@/components/FlatGrid";
 import { ScrollDissolveReveal } from "@/components/ui/scroll-dissolve-reveal";
-import { ESPARTO_IMAGES, EspartoImageItem } from "@/data/espartoData";
+import { ESPARTO_IMAGES } from "@/data/espartoData";
 
 export default function Esparto2026Page() {
   const [activeMomentIndex, setActiveMomentIndex] = useState(0);
-  const [selectedPhoto, setSelectedPhoto] = useState<EspartoImageItem | null>(null);
   const dissolveContainerRef = useRef<HTMLDivElement>(null);
 
   const allImageUrls = useMemo(() => ESPARTO_IMAGES.map((item) => item.image), []);
@@ -44,8 +38,6 @@ export default function Esparto2026Page() {
   // Keyboard navigation for jumping between moments
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      // Ignore if user is inside a form or modal
-      if (selectedPhoto) return;
       if (e.key === "ArrowRight" || e.key === "KeyD") {
         scrollToMoment(activeMomentIndex + 1);
       } else if (e.key === "ArrowLeft" || e.key === "KeyA") {
@@ -54,7 +46,7 @@ export default function Esparto2026Page() {
     };
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [activeMomentIndex, selectedPhoto, scrollToMoment]);
+  }, [activeMomentIndex, scrollToMoment]);
 
   const activeProgressPercent = Math.round(
     ((activeMomentIndex + 1) / ESPARTO_IMAGES.length) * 100
@@ -289,14 +281,16 @@ export default function Esparto2026Page() {
 
             {/* Scrubber Progress Bar */}
             <div className="flex items-center gap-2.5 min-w-[140px] sm:min-w-[200px]">
-              <div className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden relative cursor-pointer"
-                   onClick={(e) => {
-                     const rect = e.currentTarget.getBoundingClientRect();
-                     const clickX = e.clientX - rect.left;
-                     const ratio = clickX / rect.width;
-                     const target = Math.round(ratio * (ESPARTO_IMAGES.length - 1));
-                     scrollToMoment(target);
-                   }}>
+              <div 
+                className="w-full bg-white/20 h-1.5 rounded-full overflow-hidden relative cursor-pointer"
+                onClick={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  const clickX = e.clientX - rect.left;
+                  const ratio = clickX / rect.width;
+                  const target = Math.round(ratio * (ESPARTO_IMAGES.length - 1));
+                  scrollToMoment(target);
+                }}
+              >
                 <div
                   className="bg-emerald-400 h-full rounded-full transition-all duration-150"
                   style={{ width: `${activeProgressPercent}%` }}
@@ -319,81 +313,6 @@ export default function Esparto2026Page() {
           </div>
         </ScrollDissolveReveal>
       </section>
-
-      {/* Complete Photographic Archive Grid (Sorting Tabs Removed) */}
-      <section className="relative z-10 max-w-7xl mx-auto px-6 py-24 border-t border-zinc-200 dark:border-white/10">
-        <div className="mb-10 text-center sm:text-left">
-          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 font-mono text-xs font-bold tracking-widest uppercase mb-2">
-            <Layers size={13} className="text-emerald-500" />
-            <span>FULL PERSPECTIVE VAULT</span>
-          </div>
-          <h3 className="text-2xl sm:text-4xl font-black tracking-tight text-zinc-950 dark:text-white">
-            All 76 Captured Moments
-          </h3>
-          <p className="text-xs sm:text-sm text-zinc-600 dark:text-zinc-400 mt-1">
-            Complete chronological photographic archive from the Esparto 2026 collaboration conclave.
-          </p>
-        </div>
-
-        {/* 76-Photo Responsive Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 sm:gap-4">
-          {ESPARTO_IMAGES.map((item, idx) => (
-            <div
-              key={item.id}
-              onClick={() => setSelectedPhoto(item)}
-              className="group relative aspect-[3/4] rounded-2xl overflow-hidden cursor-pointer bg-zinc-900 border border-zinc-200/80 dark:border-white/10 hover:border-emerald-500/60 dark:hover:border-emerald-500/60 transition-all duration-300 hover:scale-[1.03] shadow-sm hover:shadow-xl hover:shadow-emerald-500/10"
-            >
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={item.image}
-                alt=""
-                loading="lazy"
-                className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 p-3 flex items-end justify-between text-white">
-                <span className="text-[11px] font-mono text-emerald-400 font-bold">
-                  #{String(idx + 1).padStart(2, "0")}
-                </span>
-                <Maximize2 size={14} className="text-zinc-300" />
-              </div>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Lightbox Modal */}
-      {selectedPhoto && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-2xl p-4 sm:p-8 animate-in fade-in duration-200"
-          onClick={() => setSelectedPhoto(null)}
-        >
-          <div
-            className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-zinc-950 border border-white/15 rounded-3xl overflow-hidden shadow-2xl"
-            onClick={(e) => e.stopPropagation()}
-          >
-            <div className="w-full flex items-center justify-between px-6 py-4 bg-black/70 border-b border-white/10 text-white">
-              <span className="text-xs font-mono text-emerald-400 font-bold tracking-wider uppercase">
-                ESPARTO 2026 ARCHIVE • {selectedPhoto.id}
-              </span>
-              <button
-                onClick={() => setSelectedPhoto(null)}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
-              >
-                <X size={20} />
-              </button>
-            </div>
-
-            <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-black/90 overflow-hidden min-h-[350px]">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src={selectedPhoto.image}
-                alt=""
-                className="max-h-[75vh] w-auto object-contain rounded-xl shadow-2xl"
-              />
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
