@@ -1,15 +1,13 @@
 "use client";
 
-import React, { useEffect, useRef, useState, useCallback } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { 
   ChevronLeft, 
   ChevronRight, 
   Play, 
   Pause, 
   Maximize2, 
-  X, 
-  MousePointer,
-  Sparkles
+  X 
 } from "lucide-react";
 import { AunsfImageItem } from "@/data/aunsfData";
 
@@ -19,28 +17,36 @@ interface DisintegratingCarouselProps {
   autoplayInitial?: boolean;
 }
 
-interface DetachedParticle {
+interface DetachedBlock {
   c: number;
   r: number;
-  color: string;
   dx: number;
   dy: number;
   size: number;
   alpha: number;
 }
 
-// Pseudo-random deterministic hash for reproducible organic block contours
-function getBlockNoise(seed: number, col: number, row: number): number {
-  const n = Math.sin(col * 12.9898 + row * 78.233 + seed * 37.719) * 43758.5453;
-  return n - Math.floor(n);
+// Compute cover crop coordinates for an image
+function getCoverCrop(
+  imgW: number,
+  imgH: number,
+  targetW: number,
+  targetH: number
+) {
+  const imgRatio = imgW / imgH;
+  const targetRatio = targetW / targetH;
+  let sx = 0, sy = 0, sw = imgW, sh = imgH;
+  if (imgRatio > targetRatio) {
+    sw = imgH * targetRatio;
+    sx = (imgW - sw) / 2;
+  } else {
+    sh = imgW / targetRatio;
+    sy = (imgH - sh) / 2;
+  }
+  return { sx, sy, sw, sh };
 }
 
-function getVerticalNoise(seed: number, col: number, row: number): number {
-  const n = Math.sin(col * 39.346 + row * 11.135 + seed * 91.24) * 23421.631;
-  return n - Math.floor(n);
-}
-
-// Draw image covering target rectangle while maintaining aspect ratio
+// Draw full image covering the target rectangle
 function drawImageCover(
   ctx: CanvasRenderingContext2D,
   img: HTMLImageElement,
@@ -59,23 +65,39 @@ function drawImageCover(
 
   const imgW = img.naturalWidth || img.width;
   const imgH = img.naturalHeight || img.height;
-  const imgRatio = imgW / imgH;
-  const targetRatio = dw / dh;
-
-  let sx = 0, sy = 0, sw = imgW, sh = imgH;
-  if (imgRatio > targetRatio) {
-    sw = imgH * targetRatio;
-    sx = (imgW - sw) / 2;
-  } else {
-    sh = imgW / targetRatio;
-    sy = (imgH - sh) / 2;
-  }
-
-  ctx.drawImage(img, sx, sy, sw, sh, dx, dy, dw, dh);
+  const crop = getCoverCrop(imgW, imgH, dw, dh);
+  ctx.drawImage(img, crop.sx, crop.sy, crop.sw, crop.sh, dx, dy, dw, dh);
 
   if (radius > 0) {
     ctx.restore();
   }
+}
+
+// Draw a single slice corresponding to grid block (c, r)
+function drawCoverSlice(
+  ctx: CanvasRenderingContext2D,
+  img: HTMLImageElement,
+  c: number,
+  r: number,
+  cols: number,
+  rows: number,
+  cardW: number,
+  cardH: number,
+  destX: number,
+  destY: number,
+  destW: number,
+  destH: number
+) {
+  const imgW = img.naturalWidth || img.width;
+  const imgH = img.naturalHeight || img.height;
+  const crop = getCoverCrop(imgW, imgH, cardW, cardH);
+
+  const blockSx = crop.sx + (c / cols) * crop.sw;
+  const blockSy = crop.sy + (r / rows) * crop.sh;
+  const blockSw = crop.sw / cols;
+  const blockSh = crop.sh / rows;
+
+  ctx.drawImage(img, blockSx, blockSy, blockSw, blockSh, destX, destY, destW, destH);
 }
 
 export default function DisintegratingCarousel({
@@ -86,12 +108,11 @@ export default function DisintegratingCarousel({
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
-  // Loaded images & pre-sampled block color grids
+  // Cached image elements and reusable scratch canvas
   const loadedImagesRef = useRef<Map<number, HTMLImageElement>>(new Map());
-  const colorDataRef = useRef<Map<number, Uint8ClampedArray>>(new Map());
   const scratchCanvasRef = useRef<HTMLCanvasElement | null>(null);
 
-  // Motion and Scroll state
+  // Motion state
   const scrollRef = useRef<{
     current: number;
     target: number;
@@ -121,13 +142,13 @@ export default function DisintegratingCarousel({
     lastFrameTime: performance.now(),
     width: 1200,
     height: 800,
-    cardW: 400,
+    cardW: 390,
     cardH: 540,
     gap: 52,
-    pitch: 452,
-    cols: 32,
-    rows: 44,
-    blockSize: 12
+    pitch: 442,
+    cols: 26,
+    rows: 36,
+    blockSize: 15
   });
 
   const [activeIndex, setActiveIndex] = useState(0);
@@ -136,17 +157,13 @@ export default function DisintegratingCarousel({
   const [modalIndex, setModalIndex] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
 
-  // Preload all images and cache sample colors
+  // Preload images
   useEffect(() => {
-    const s = scrollRef.current;
     if (typeof window === "undefined") return;
 
     if (!scratchCanvasRef.current) {
       scratchCanvasRef.current = document.createElement("canvas");
     }
-
-    const sampleCanvas = document.createElement("canvas");
-    const sampleCtx = sampleCanvas.getContext("2d", { willReadFrequently: true });
 
     items.forEach((item, index) => {
       const img = new Image();
@@ -154,24 +171,11 @@ export default function DisintegratingCarousel({
       img.src = item.image;
       img.onload = () => {
         loadedImagesRef.current.set(index, img);
-
-        if (sampleCtx) {
-          sampleCanvas.width = s.cols;
-          sampleCanvas.height = s.rows;
-          sampleCtx.clearRect(0, 0, s.cols, s.rows);
-          sampleCtx.drawImage(img, 0, 0, s.cols, s.rows);
-          try {
-            const data = sampleCtx.getImageData(0, 0, s.cols, s.rows).data;
-            colorDataRef.current.set(index, data);
-          } catch {
-            // ignore cross-origin error if any
-          }
-        }
       };
     });
   }, [items]);
 
-  // Main Canvas Render & Slower Infinite Loop
+  // Main Render Loop with Pristine Disintegration & Infinite Scroll
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -196,11 +200,11 @@ export default function DisintegratingCarousel({
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
 
-      // Sizing for full-page immersion
-      const cardH = w < 640 ? Math.min(420, h * 0.62) : Math.min(560, h * 0.68);
+      // Card sizing
+      const cardH = w < 640 ? Math.min(420, h * 0.62) : Math.min(540, h * 0.68);
       const cardW = Math.round(cardH * 0.72);
       const gap = w < 640 ? 32 : 52;
-      const blockSize = w < 640 ? 10 : 12;
+      const blockSize = w < 640 ? 12 : 15;
       const cols = Math.floor(cardW / blockSize);
       const rows = Math.floor(cardH / blockSize);
 
@@ -226,7 +230,6 @@ export default function DisintegratingCarousel({
     if (containerRef.current) resizeObserver.observe(containerRef.current);
     window.addEventListener("resize", handleResize);
 
-    // Animation Render Loop
     const render = () => {
       const s = scrollRef.current;
       const now = performance.now();
@@ -234,20 +237,18 @@ export default function DisintegratingCarousel({
       s.lastFrameTime = now;
       const N = items.length;
 
-      // Slower, graceful movement
+      // Slow ambient movement
       if (isPlaying && !s.isDragging && !isHovered) {
-        // Continuous slow, majestic drift (~32px per second)
         s.target += dt * 32;
       } else if (!s.isDragging) {
-        // Damped velocity glide
         s.velocity *= 0.94;
         s.target += s.velocity * dt * 60;
       }
 
-      // Smooth, deliberate lerp towards target (slowed down to 0.055)
+      // Smooth cinematic lerp
       s.current += (s.target - s.current) * 0.055;
 
-      // Keep coordinates bounded to prevent numeric overflow while maintaining seamless continuity
+      // Wrap coordinates seamlessly
       const cycleLength = N * s.pitch;
       if (Math.abs(s.current) > cycleLength * 3) {
         const offset = Math.floor(s.current / cycleLength) * cycleLength;
@@ -255,7 +256,7 @@ export default function DisintegratingCarousel({
         s.target -= offset;
       }
 
-      // Calculate current active slide index
+      // Current slide index
       const rawCurrentIndex = Math.round(s.current / s.pitch);
       const normalizedActiveIndex = ((rawCurrentIndex % N) + N) % N;
       setActiveIndex(normalizedActiveIndex);
@@ -264,7 +265,7 @@ export default function DisintegratingCarousel({
       ctx.fillStyle = "#08090c";
       ctx.fillRect(0, 0, s.width, s.height);
 
-      // Center atmospheric glow
+      // Atmospheric vignette
       const gradient = ctx.createRadialGradient(
         s.width / 2, s.height / 2, 80,
         s.width / 2, s.height / 2, s.width * 0.75
@@ -278,8 +279,8 @@ export default function DisintegratingCarousel({
       const centerX = s.width / 2;
       const cardTop = (s.height - s.cardH) / 2;
 
-      // Determine visible range of slot integers k for infinite seamless looping
-      const extraMargin = 450;
+      // Determine visible cards range k
+      const extraMargin = 400;
       const minX = -s.cardW - extraMargin;
       const maxX = s.width + extraMargin;
 
@@ -288,145 +289,138 @@ export default function DisintegratingCarousel({
 
       for (let k = kMin; k <= kMax; k++) {
         const imgIdx = ((k % N) + N) % N;
-        const item = items[imgIdx];
         const cardCenterX = centerX + k * s.pitch - s.current;
         const cardLeft = cardCenterX - s.cardW / 2;
-
         const img = loadedImagesRef.current.get(imgIdx);
-        const colorData = colorDataRef.current.get(imgIdx);
 
         // Distance from center of viewport
         const offsetFromCenter = cardCenterX - centerX;
         const normOffset = offsetFromCenter / s.pitch;
         const absOffset = Math.abs(normOffset);
 
-        // Slower, more progressive disintegration curve
+        // Disintegration zone:
+        // Central area (|absOffset| <= 0.35) remains 100% SOLID & PRISTINE
         let progress = 0;
         let direction: "left" | "right" = "left";
 
-        if (absOffset > 0.22) {
-          progress = Math.min(1.0, (absOffset - 0.22) / 1.35);
+        if (absOffset > 0.35) {
+          progress = Math.min(1.0, (absOffset - 0.35) / 1.15);
           direction = normOffset < 0 ? "left" : "right";
         }
 
-        // Case 1: Centered / Solid intact card
+        // Case 1: Centered / Solid intact card (zero holes, crisp photo)
         if (progress <= 0 || !scratchCanvasRef.current) {
           if (img) {
             ctx.save();
-            ctx.shadowColor = "rgba(16, 185, 129, 0.25)";
-            ctx.shadowBlur = 28;
-            drawImageCover(ctx, img, cardLeft, cardTop, s.cardW, s.cardH, 12);
+            ctx.shadowColor = "rgba(16, 185, 129, 0.22)";
+            ctx.shadowBlur = 24;
+            drawImageCover(ctx, img, cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.restore();
 
             // Inner subtle border
             ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
             ctx.lineWidth = 1;
             ctx.beginPath();
-            ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 12);
+            ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.stroke();
           } else {
             ctx.fillStyle = "#14151a";
             ctx.beginPath();
-            ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 12);
+            ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.fill();
           }
           continue;
         }
 
-        // Case 2: Disintegrating / Reintegrating Card
+        // Case 2: Clean Edge Disintegration
         const scratchCanvas = scratchCanvasRef.current;
         const scratchCtx = scratchCanvas.getContext("2d");
         if (!scratchCtx || !img) continue;
 
         scratchCtx.clearRect(0, 0, s.cardW, s.cardH);
-        drawImageCover(scratchCtx, img, 0, 0, s.cardW, s.cardH, 8);
+        drawImageCover(scratchCtx, img, 0, 0, s.cardW, s.cardH, 0);
 
-        const detachedParticles: DetachedParticle[] = [];
+        const detachedBlocks: DetachedBlock[] = [];
         const bSize = s.blockSize;
 
+        // Controlled breaking front advancing smoothly from the outer edge inward
+        const dissolveCols = progress * (s.cols * 0.75);
+
         for (let r = 0; r < s.rows; r++) {
+          // Clean stepped notch profile along each row (0 to 2.2 blocks)
+          const rowNotch = (Math.sin(r * 2.3 + imgIdx * 3.7) * 0.5 + 0.5) * 2.2;
+          const edgeThreshold = dissolveCols + rowNotch;
+
           for (let c = 0; c < s.cols; c++) {
-            const u = direction === "left" 
-              ? c / s.cols 
-              : (s.cols - 1 - c) / s.cols;
+            const colPos = direction === "left" ? c : (s.cols - 1 - c);
 
-            const noise = getBlockNoise(imgIdx, c, r);
-            const noiseV = getVerticalNoise(imgIdx, c, r);
+            // If outside the breaking front, it is 100% SOLID
+            if (colPos > edgeThreshold) {
+              continue;
+            }
 
-            // Slower threshold curve
-            const threshold = u * 0.94 + (noise - 0.5) * 0.26;
+            // Block is detached: punch hole out from solid card
+            scratchCtx.clearRect(c * bSize, r * bSize, bSize, bSize);
 
-            if (progress > threshold) {
-              scratchCtx.clearRect(c * bSize, r * bSize, bSize, bSize);
+            // Distance inside the detached region
+            const distFromEdge = edgeThreshold - colPos;
 
-              // Local decay progress of this detached particle
-              const pDecay = Math.min(1.0, (progress - threshold) / 0.48);
-
+            // Only actively fly blocks within 3.5 columns of the breaking front
+            if (distFromEdge < 3.5) {
+              const p = distFromEdge / 3.5;
               const dirSign = direction === "left" ? -1 : 1;
-              const scatterX = dirSign * (pDecay * 120 + Math.pow(pDecay, 1.8) * 150 * (noise + 0.2));
-              const scatterY = (noiseV - 0.5) * pDecay * 70;
-              const pSize = Math.max(3, bSize * (1 - 0.4 * pDecay));
-              const alpha = Math.max(0, 1 - Math.pow(pDecay, 1.4));
+              const dx = dirSign * (p * 28 + Math.pow(p, 1.8) * 90);
+              const dy = Math.sin(r * 1.4 + c * 2.1) * p * 22;
+              const alpha = Math.max(0, 1 - p * 0.85);
+              const size = Math.max(3, bSize * (1 - 0.25 * p));
 
-              let color = "rgba(180, 190, 205, 0.8)";
-              if (colorData) {
-                const pIndex = (r * s.cols + c) * 4;
-                const cr = colorData[pIndex];
-                const cg = colorData[pIndex + 1];
-                const cb = colorData[pIndex + 2];
-                color = `rgb(${cr}, ${cg}, ${cb})`;
-              }
-
-              if (alpha > 0.02) {
-                detachedParticles.push({
-                  c,
-                  r,
-                  color,
-                  dx: scatterX,
-                  dy: scatterY,
-                  size: pSize,
-                  alpha
-                });
-              }
+              detachedBlocks.push({ c, r, dx, dy, size, alpha });
             }
           }
         }
 
         // Draw solid notched card on main canvas
         ctx.save();
-        ctx.globalAlpha = Math.max(0.08, 1 - Math.pow(progress, 2.5));
+        ctx.globalAlpha = Math.max(0.1, 1 - Math.pow(progress, 2.8));
         ctx.drawImage(scratchCanvas, cardLeft, cardTop);
         ctx.restore();
 
-        // Draw detached flying particles
-        for (let p = 0; p < detachedParticles.length; p++) {
-          const pt = detachedParticles[p];
+        // Draw the detached image slices with exact photograph pixels
+        for (let b = 0; b < detachedBlocks.length; b++) {
+          const blk = detachedBlocks[b];
           ctx.save();
-          ctx.globalAlpha = pt.alpha;
-          ctx.fillStyle = pt.color;
-          ctx.fillRect(
-            cardLeft + pt.c * bSize + pt.dx,
-            cardTop + pt.r * bSize + pt.dy,
-            pt.size,
-            pt.size
+          ctx.globalAlpha = blk.alpha;
+          drawCoverSlice(
+            ctx,
+            img,
+            blk.c,
+            blk.r,
+            s.cols,
+            s.rows,
+            s.cardW,
+            s.cardH,
+            cardLeft + blk.c * bSize + blk.dx,
+            cardTop + blk.r * bSize + blk.dy,
+            blk.size,
+            blk.size
           );
           ctx.restore();
         }
 
-        // Subtle ambient drifting dust squares
-        if (progress > 0.15) {
+        // Ambient micro-dust squares drifting outward
+        if (progress > 0.2) {
           ctx.save();
           const dirSign = direction === "left" ? -1 : 1;
-          for (let d = 0; d < 15; d++) {
-            const dustHash = getBlockNoise(imgIdx + 100, d, 7);
-            const dustV = getVerticalNoise(imgIdx + 100, d, 19);
-            const dustX = cardLeft + (direction === "left" ? 0 : s.cardW) + dirSign * (dustHash * 220 + 35) * progress;
+          for (let d = 0; d < 12; d++) {
+            const dustP = ((d * 17 + imgIdx * 31) % 100) / 100;
+            const dustV = ((d * 37 + imgIdx * 19) % 100) / 100;
+            const dustX = cardLeft + (direction === "left" ? 0 : s.cardW) + dirSign * (dustP * 180 + 30) * progress;
             const dustY = cardTop + dustV * s.cardH;
-            const dustSize = 2 + (d % 3) * 1.5;
-            const dustAlpha = (1 - progress * 0.8) * (0.35 + 0.25 * Math.sin(now * 0.002 + d));
+            const dustSize = 2 + (d % 3);
+            const dustAlpha = (1 - progress * 0.8) * (0.3 + 0.2 * Math.sin(now * 0.002 + d));
 
             ctx.globalAlpha = Math.max(0, dustAlpha);
-            ctx.fillStyle = "rgba(220, 235, 255, 0.75)";
+            ctx.fillStyle = "rgba(220, 235, 255, 0.7)";
             ctx.fillRect(dustX, dustY, dustSize, dustSize);
           }
           ctx.restore();
@@ -445,7 +439,7 @@ export default function DisintegratingCarousel({
     };
   }, [items, isPlaying, isHovered]);
 
-  // Mouse / Pointer Interaction handlers with relaxed inertia
+  // Pointer interactions with smooth inertia
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const s = scrollRef.current;
     s.isDragging = true;
@@ -461,7 +455,7 @@ export default function DisintegratingCarousel({
     if (!s.isDragging) return;
     const deltaX = e.clientX - s.lastX;
     s.lastX = e.clientX;
-    s.velocity = -deltaX * 12; // relaxed inertia
+    s.velocity = -deltaX * 12;
     s.target = s.dragStartScroll - (e.clientX - s.dragStartX) * 1.0;
   };
 
@@ -473,7 +467,7 @@ export default function DisintegratingCarousel({
       (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
 
-    // Click on active center card to open high-res modal
+    // Click on active card opens modal
     if (Math.abs(e.clientX - s.dragStartX) < 6) {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
@@ -487,14 +481,13 @@ export default function DisintegratingCarousel({
           setModalItem(items[clickedIdx]);
           setModalIndex(clickedIdx);
         } else {
-          // Slower, smooth glide to clicked card
           s.target = rawClickedK * s.pitch;
         }
       }
     }
   };
 
-  // Wheel handling for relaxed trackpad / mouse scroll
+  // Relaxed wheel scroll
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const s = scrollRef.current;
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
@@ -532,9 +525,8 @@ export default function DisintegratingCarousel({
         className="w-full h-full block cursor-grab active:cursor-grabbing"
       />
 
-      {/* Floating Bottom Control Pill - Clean & Minimalist, Zero Titles */}
+      {/* Floating Bottom Control Pill */}
       <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3 bg-black/60 backdrop-blur-xl px-5 py-2.5 rounded-full border border-white/10 shadow-2xl text-white">
-        {/* Previous Button */}
         <button
           onClick={goToPrev}
           className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
@@ -543,12 +535,10 @@ export default function DisintegratingCarousel({
           <ChevronLeft size={18} />
         </button>
 
-        {/* Slide Counter */}
         <span className="font-mono text-xs text-emerald-400 font-bold px-2">
           {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
         </span>
 
-        {/* Autoplay Play/Pause */}
         <button
           onClick={() => setIsPlaying(!isPlaying)}
           className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
@@ -557,7 +547,6 @@ export default function DisintegratingCarousel({
           {isPlaying ? <Pause size={15} /> : <Play size={15} />}
         </button>
 
-        {/* Next Button */}
         <button
           onClick={goToNext}
           className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
@@ -568,7 +557,6 @@ export default function DisintegratingCarousel({
 
         <div className="h-4 w-px bg-white/20 mx-1" />
 
-        {/* Expand Modal */}
         <button
           onClick={() => {
             setModalItem(items[activeIndex]);
@@ -581,7 +569,7 @@ export default function DisintegratingCarousel({
         </button>
       </div>
 
-      {/* Fullscreen High-Res Modal (Clean without titles) */}
+      {/* Fullscreen Clean Modal */}
       {modalItem && (
         <div 
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 sm:p-8 animate-in fade-in duration-200"
@@ -591,7 +579,6 @@ export default function DisintegratingCarousel({
             className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Modal Header */}
             <div className="w-full flex items-center justify-between px-6 py-3.5 bg-black/50 border-b border-white/10 text-white">
               <span className="text-xs font-mono text-emerald-400 font-bold tracking-wider">
                 {modalIndex + 1} / {items.length}
@@ -604,7 +591,6 @@ export default function DisintegratingCarousel({
               </button>
             </div>
 
-            {/* Modal Image */}
             <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-black/80 overflow-hidden min-h-[350px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
@@ -613,7 +599,6 @@ export default function DisintegratingCarousel({
                 className="max-h-[75vh] w-auto object-contain rounded-lg shadow-2xl"
               />
 
-              {/* Prev/Next arrows in modal */}
               <button
                 onClick={() => {
                   const prev = (modalIndex - 1 + items.length) % items.length;

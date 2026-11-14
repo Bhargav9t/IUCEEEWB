@@ -20,6 +20,7 @@ const FacebookIcon = ({ size = 24 }: { size?: number }) => (
 
 export default function Footer() {
   const pathname = usePathname();
+  if (pathname === "/aunsf-2026") return null;
   const isAdmin = pathname?.startsWith("/admin");
 
   return (
