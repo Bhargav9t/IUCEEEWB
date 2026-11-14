@@ -8,10 +8,8 @@ import {
   Pause, 
   Maximize2, 
   X, 
-  Sparkles,
-  Layers,
   MousePointer,
-  RotateCcw
+  Sparkles
 } from "lucide-react";
 import { AunsfImageItem } from "@/data/aunsfData";
 
@@ -122,13 +120,13 @@ export default function DisintegratingCarousel({
     velocity: 0,
     lastFrameTime: performance.now(),
     width: 1200,
-    height: 600,
-    cardW: 360,
-    cardH: 480,
-    gap: 48,
-    pitch: 408,
-    cols: 30,
-    rows: 40,
+    height: 800,
+    cardW: 400,
+    cardH: 540,
+    gap: 52,
+    pitch: 452,
+    cols: 32,
+    rows: 44,
     blockSize: 12
   });
 
@@ -143,7 +141,6 @@ export default function DisintegratingCarousel({
     const s = scrollRef.current;
     if (typeof window === "undefined") return;
 
-    // Create scratch canvas for punch-out rendering
     if (!scratchCanvasRef.current) {
       scratchCanvasRef.current = document.createElement("canvas");
     }
@@ -174,7 +171,7 @@ export default function DisintegratingCarousel({
     });
   }, [items]);
 
-  // Main Canvas Render & Animation Loop
+  // Main Canvas Render & Slower Infinite Loop
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -189,7 +186,7 @@ export default function DisintegratingCarousel({
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
       const w = Math.floor(rect.width);
-      const h = Math.floor(rect.height || (w < 640 ? 460 : 580));
+      const h = Math.floor(rect.height || window.innerHeight);
 
       canvas.width = w * dpr;
       canvas.height = h * dpr;
@@ -199,10 +196,10 @@ export default function DisintegratingCarousel({
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
 
-      // Adaptive card dimensions
-      const cardW = w < 640 ? Math.min(270, w * 0.72) : w < 1024 ? 320 : 360;
-      const cardH = w < 640 ? Math.min(360, h * 0.8) : w < 1024 ? 440 : 480;
-      const gap = w < 640 ? 28 : 44;
+      // Sizing for full-page immersion
+      const cardH = w < 640 ? Math.min(420, h * 0.62) : Math.min(560, h * 0.68);
+      const cardW = Math.round(cardH * 0.72);
+      const gap = w < 640 ? 32 : 52;
       const blockSize = w < 640 ? 10 : 12;
       const cols = Math.floor(cardW / blockSize);
       const rows = Math.floor(cardH / blockSize);
@@ -227,6 +224,7 @@ export default function DisintegratingCarousel({
     handleResize();
     const resizeObserver = new ResizeObserver(handleResize);
     if (containerRef.current) resizeObserver.observe(containerRef.current);
+    window.addEventListener("resize", handleResize);
 
     // Animation Render Loop
     const render = () => {
@@ -234,144 +232,142 @@ export default function DisintegratingCarousel({
       const now = performance.now();
       const dt = Math.min((now - s.lastFrameTime) / 1000, 0.1);
       s.lastFrameTime = now;
+      const N = items.length;
 
-      // Friction & smooth lerp towards target
-      if (!s.isDragging) {
-        s.velocity *= 0.92;
+      // Slower, graceful movement
+      if (isPlaying && !s.isDragging && !isHovered) {
+        // Continuous slow, majestic drift (~32px per second)
+        s.target += dt * 32;
+      } else if (!s.isDragging) {
+        // Damped velocity glide
+        s.velocity *= 0.94;
         s.target += s.velocity * dt * 60;
-        
-        // Snap when slow
-        if (Math.abs(s.velocity) < 0.2) {
-          const nearestIdx = Math.round(s.target / s.pitch);
-          const clampedIdx = Math.max(0, Math.min(items.length - 1, nearestIdx));
-          s.target += (clampedIdx * s.pitch - s.target) * 0.1;
-        }
       }
 
-      // Bound target scroll within item limits
-      const maxScroll = (items.length - 1) * s.pitch;
-      s.target = Math.max(-s.pitch * 0.4, Math.min(maxScroll + s.pitch * 0.4, s.target));
+      // Smooth, deliberate lerp towards target (slowed down to 0.055)
+      s.current += (s.target - s.current) * 0.055;
 
-      // Lerp current scroll
-      s.current += (s.target - s.current) * 0.14;
+      // Keep coordinates bounded to prevent numeric overflow while maintaining seamless continuity
+      const cycleLength = N * s.pitch;
+      if (Math.abs(s.current) > cycleLength * 3) {
+        const offset = Math.floor(s.current / cycleLength) * cycleLength;
+        s.current -= offset;
+        s.target -= offset;
+      }
 
-      // Update active center index
-      const curIdx = Math.max(0, Math.min(items.length - 1, Math.round(s.current / s.pitch)));
-      setActiveIndex(curIdx);
+      // Calculate current active slide index
+      const rawCurrentIndex = Math.round(s.current / s.pitch);
+      const normalizedActiveIndex = ((rawCurrentIndex % N) + N) % N;
+      setActiveIndex(normalizedActiveIndex);
 
-      // Clear main canvas with deep dark background
+      // Deep dark canvas background
       ctx.fillStyle = "#08090c";
       ctx.fillRect(0, 0, s.width, s.height);
 
-      // Subtle radial ambient vignette in center
+      // Center atmospheric glow
       const gradient = ctx.createRadialGradient(
-        s.width / 2, s.height / 2, 50,
-        s.width / 2, s.height / 2, s.width * 0.7
+        s.width / 2, s.height / 2, 80,
+        s.width / 2, s.height / 2, s.width * 0.75
       );
       gradient.addColorStop(0, "rgba(16, 185, 129, 0.05)");
       gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.02)");
-      gradient.addColorStop(1, "rgba(8, 9, 12, 0.95)");
+      gradient.addColorStop(1, "rgba(8, 9, 12, 0.98)");
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, s.width, s.height);
 
       const centerX = s.width / 2;
       const cardTop = (s.height - s.cardH) / 2;
 
-      // Draw all visible cards with disintegration & reintegration
-      items.forEach((item, idx) => {
-        const cardCenterX = centerX + idx * s.pitch - s.current;
+      // Determine visible range of slot integers k for infinite seamless looping
+      const extraMargin = 450;
+      const minX = -s.cardW - extraMargin;
+      const maxX = s.width + extraMargin;
+
+      const kMin = Math.floor((minX - centerX + s.current) / s.pitch);
+      const kMax = Math.ceil((maxX - centerX + s.current) / s.pitch);
+
+      for (let k = kMin; k <= kMax; k++) {
+        const imgIdx = ((k % N) + N) % N;
+        const item = items[imgIdx];
+        const cardCenterX = centerX + k * s.pitch - s.current;
         const cardLeft = cardCenterX - s.cardW / 2;
-        const cardRight = cardLeft + s.cardW;
 
-        // Viewport culling with margin for scattered flying particles
-        if (cardRight < -350 || cardLeft > s.width + 350) return;
-
-        const img = loadedImagesRef.current.get(idx);
-        const colorData = colorDataRef.current.get(idx);
+        const img = loadedImagesRef.current.get(imgIdx);
+        const colorData = colorDataRef.current.get(imgIdx);
 
         // Distance from center of viewport
         const offsetFromCenter = cardCenterX - centerX;
         const normOffset = offsetFromCenter / s.pitch;
         const absOffset = Math.abs(normOffset);
 
-        // Disintegration begins as card moves away from center
-        // Center card (absOffset <= 0.22) is 100% solid & intact
+        // Slower, more progressive disintegration curve
         let progress = 0;
         let direction: "left" | "right" = "left";
 
         if (absOffset > 0.22) {
-          progress = Math.min(1.0, (absOffset - 0.22) / 1.05);
+          progress = Math.min(1.0, (absOffset - 0.22) / 1.35);
           direction = normOffset < 0 ? "left" : "right";
         }
 
-        // Case 1: Centered or Intact card (no disintegration)
+        // Case 1: Centered / Solid intact card
         if (progress <= 0 || !scratchCanvasRef.current) {
           if (img) {
             ctx.save();
-            // Subtle card border glow
             ctx.shadowColor = "rgba(16, 185, 129, 0.25)";
-            ctx.shadowBlur = 24;
+            ctx.shadowBlur = 28;
             drawImageCover(ctx, img, cardLeft, cardTop, s.cardW, s.cardH, 12);
             ctx.restore();
 
-            // Crisp inner border outline
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.15)";
+            // Inner subtle border
+            ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 12);
             ctx.stroke();
           } else {
-            // Skeleton placeholder
-            ctx.fillStyle = "#181a20";
+            ctx.fillStyle = "#14151a";
             ctx.beginPath();
             ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 12);
             ctx.fill();
           }
-          return;
+          continue;
         }
 
         // Case 2: Disintegrating / Reintegrating Card
         const scratchCanvas = scratchCanvasRef.current;
         const scratchCtx = scratchCanvas.getContext("2d");
-        if (!scratchCtx || !img) return;
+        if (!scratchCtx || !img) continue;
 
-        // Reset scratch canvas
         scratchCtx.clearRect(0, 0, s.cardW, s.cardH);
         drawImageCover(scratchCtx, img, 0, 0, s.cardW, s.cardH, 8);
 
         const detachedParticles: DetachedParticle[] = [];
         const bSize = s.blockSize;
 
-        // Iterate through pixel block grid
         for (let r = 0; r < s.rows; r++) {
           for (let c = 0; c < s.cols; c++) {
-            // Normalized position across card width
             const u = direction === "left" 
               ? c / s.cols 
               : (s.cols - 1 - c) / s.cols;
 
-            // Deterministic noise for jagged stepped edge
-            const noise = getBlockNoise(idx, c, r);
-            const noiseV = getVerticalNoise(idx, c, r);
+            const noise = getBlockNoise(imgIdx, c, r);
+            const noiseV = getVerticalNoise(imgIdx, c, r);
 
-            // Detachment threshold
-            const threshold = u * 0.92 + (noise - 0.5) * 0.28;
+            // Slower threshold curve
+            const threshold = u * 0.94 + (noise - 0.5) * 0.26;
 
             if (progress > threshold) {
-              // Block is detached! Punch hole in solid card
               scratchCtx.clearRect(c * bSize, r * bSize, bSize, bSize);
 
               // Local decay progress of this detached particle
-              const pDecay = Math.min(1.0, (progress - threshold) / 0.42);
+              const pDecay = Math.min(1.0, (progress - threshold) / 0.48);
 
-              // Directional scatter displacement
               const dirSign = direction === "left" ? -1 : 1;
-              const scatterX = dirSign * (pDecay * 140 + Math.pow(pDecay, 2) * 180 * (noise + 0.25));
-              const scatterY = (noiseV - 0.5) * pDecay * 85;
+              const scatterX = dirSign * (pDecay * 120 + Math.pow(pDecay, 1.8) * 150 * (noise + 0.2));
+              const scatterY = (noiseV - 0.5) * pDecay * 70;
               const pSize = Math.max(3, bSize * (1 - 0.4 * pDecay));
               const alpha = Math.max(0, 1 - Math.pow(pDecay, 1.4));
 
-              // Lookup sampled color
               let color = "rgba(180, 190, 205, 0.8)";
               if (colorData) {
                 const pIndex = (r * s.cols + c) * 4;
@@ -396,9 +392,9 @@ export default function DisintegratingCarousel({
           }
         }
 
-        // Draw the punched-out solid card on main canvas
+        // Draw solid notched card on main canvas
         ctx.save();
-        ctx.globalAlpha = Math.max(0.1, 1 - Math.pow(progress, 2.5));
+        ctx.globalAlpha = Math.max(0.08, 1 - Math.pow(progress, 2.5));
         ctx.drawImage(scratchCanvas, cardLeft, cardTop);
         ctx.restore();
 
@@ -417,17 +413,17 @@ export default function DisintegratingCarousel({
           ctx.restore();
         }
 
-        // Ambient micro-dust square particles drifting further out (like the screenshot!)
+        // Subtle ambient drifting dust squares
         if (progress > 0.15) {
           ctx.save();
           const dirSign = direction === "left" ? -1 : 1;
-          for (let k = 0; k < 18; k++) {
-            const dustHash = getBlockNoise(idx + 100, k, 7);
-            const dustV = getVerticalNoise(idx + 100, k, 19);
-            const dustX = cardLeft + (direction === "left" ? 0 : s.cardW) + dirSign * (dustHash * 260 + 40) * progress;
+          for (let d = 0; d < 15; d++) {
+            const dustHash = getBlockNoise(imgIdx + 100, d, 7);
+            const dustV = getVerticalNoise(imgIdx + 100, d, 19);
+            const dustX = cardLeft + (direction === "left" ? 0 : s.cardW) + dirSign * (dustHash * 220 + 35) * progress;
             const dustY = cardTop + dustV * s.cardH;
-            const dustSize = 2 + (k % 3) * 1.5;
-            const dustAlpha = (1 - progress * 0.8) * (0.35 + 0.3 * Math.sin(now * 0.003 + k));
+            const dustSize = 2 + (d % 3) * 1.5;
+            const dustAlpha = (1 - progress * 0.8) * (0.35 + 0.25 * Math.sin(now * 0.002 + d));
 
             ctx.globalAlpha = Math.max(0, dustAlpha);
             ctx.fillStyle = "rgba(220, 235, 255, 0.75)";
@@ -435,7 +431,7 @@ export default function DisintegratingCarousel({
           }
           ctx.restore();
         }
-      });
+      }
 
       animId = requestAnimationFrame(render);
     };
@@ -445,23 +441,11 @@ export default function DisintegratingCarousel({
     return () => {
       cancelAnimationFrame(animId);
       resizeObserver.disconnect();
+      window.removeEventListener("resize", handleResize);
     };
-  }, [items]);
+  }, [items, isPlaying, isHovered]);
 
-  // Autoplay progression timer
-  useEffect(() => {
-    if (!isPlaying || isHovered) return;
-
-    const timer = setInterval(() => {
-      const s = scrollRef.current;
-      const nextIdx = (Math.round(s.target / s.pitch) + 1) % items.length;
-      s.target = nextIdx * s.pitch;
-    }, 4000);
-
-    return () => clearInterval(timer);
-  }, [isPlaying, isHovered, items.length]);
-
-  // Mouse / Pointer Interaction handlers
+  // Mouse / Pointer Interaction handlers with relaxed inertia
   const handlePointerDown = (e: React.PointerEvent<HTMLCanvasElement>) => {
     const s = scrollRef.current;
     s.isDragging = true;
@@ -477,8 +461,8 @@ export default function DisintegratingCarousel({
     if (!s.isDragging) return;
     const deltaX = e.clientX - s.lastX;
     s.lastX = e.clientX;
-    s.velocity = -deltaX * 35;
-    s.target = s.dragStartScroll - (e.clientX - s.dragStartX);
+    s.velocity = -deltaX * 12; // relaxed inertia
+    s.target = s.dragStartScroll - (e.clientX - s.dragStartX) * 1.0;
   };
 
   const handlePointerUp = (e: React.PointerEvent<HTMLCanvasElement>) => {
@@ -489,228 +473,129 @@ export default function DisintegratingCarousel({
       (e.target as HTMLElement).releasePointerCapture(e.pointerId);
     } catch {}
 
-    // Check if it was a quick click rather than drag
+    // Click on active center card to open high-res modal
     if (Math.abs(e.clientX - s.dragStartX) < 6) {
       const rect = canvasRef.current?.getBoundingClientRect();
       if (rect) {
         const clickX = e.clientX - rect.left;
         const centerX = s.width / 2;
-        const cardIndex = Math.round((clickX - centerX + s.current) / s.pitch);
-        if (cardIndex >= 0 && cardIndex < items.length) {
-          if (cardIndex === activeIndex) {
-            // Open modal on active card click
-            setModalItem(items[cardIndex]);
-            setModalIndex(cardIndex);
-          } else {
-            // Smoothly navigate to clicked card
-            s.target = cardIndex * s.pitch;
-          }
+        const rawClickedK = Math.round((clickX - centerX + s.current) / s.pitch);
+        const N = items.length;
+        const clickedIdx = ((rawClickedK % N) + N) % N;
+
+        if (clickedIdx === activeIndex) {
+          setModalItem(items[clickedIdx]);
+          setModalIndex(clickedIdx);
+        } else {
+          // Slower, smooth glide to clicked card
+          s.target = rawClickedK * s.pitch;
         }
       }
     }
   };
 
-  // Wheel handling for smooth trackpad horizontal scrolling
+  // Wheel handling for relaxed trackpad / mouse scroll
   const handleWheel = (e: React.WheelEvent<HTMLDivElement>) => {
     const s = scrollRef.current;
     const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
-    if (Math.abs(delta) > 3) {
-      s.target += delta * 1.2;
+    if (Math.abs(delta) > 1) {
+      s.target += delta * 0.55;
     }
   };
 
   const goToPrev = () => {
     const s = scrollRef.current;
-    const prevIdx = Math.max(0, Math.round(s.target / s.pitch) - 1);
-    s.target = prevIdx * s.pitch;
+    const currentK = Math.round(s.target / s.pitch);
+    s.target = (currentK - 1) * s.pitch;
   };
 
   const goToNext = () => {
     const s = scrollRef.current;
-    const nextIdx = Math.min(items.length - 1, Math.round(s.target / s.pitch) + 1);
-    s.target = nextIdx * s.pitch;
+    const currentK = Math.round(s.target / s.pitch);
+    s.target = (currentK + 1) * s.pitch;
   };
-
-  const currentItem = items[activeIndex] || items[0];
 
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full select-none overflow-hidden ${className}`}
+      className={`relative w-full h-full select-none overflow-hidden bg-[#08090c] ${className}`}
       onWheel={handleWheel}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Top Bar Info & Playback Controls */}
-      <div className="relative z-20 flex flex-wrap items-center justify-between gap-4 px-6 py-4 bg-zinc-900/60 dark:bg-black/60 backdrop-blur-md border-b border-white/10 text-white">
-        <div className="flex items-center space-x-3">
-          <span className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-emerald-500/20 text-emerald-400 text-xs font-mono font-bold tracking-wider border border-emerald-500/30">
-            <Sparkles size={13} className="animate-spin-slow" />
-            <span>DISINTEGRATION CAROUSEL</span>
-          </span>
-          <span className="hidden sm:inline-block text-xs text-zinc-400 font-medium">
-            Scroll or drag to see images disperse into pixel blocks
-          </span>
-        </div>
+      {/* Full-Screen Interactive Disintegration Canvas */}
+      <canvas
+        ref={canvasRef}
+        onPointerDown={handlePointerDown}
+        onPointerMove={handlePointerMove}
+        onPointerUp={handlePointerUp}
+        className="w-full h-full block cursor-grab active:cursor-grabbing"
+      />
 
-        <div className="flex items-center space-x-2">
-          {/* Autoplay Toggle */}
-          <button
-            onClick={() => setIsPlaying(!isPlaying)}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-lg bg-white/10 hover:bg-white/20 text-xs font-medium transition-colors text-zinc-200"
-            title={isPlaying ? "Pause Autoplay" : "Play Autoplay"}
-          >
-            {isPlaying ? <Pause size={14} /> : <Play size={14} />}
-            <span className="hidden md:inline">{isPlaying ? "Pause" : "Play"}</span>
-          </button>
+      {/* Floating Bottom Control Pill - Clean & Minimalist, Zero Titles */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3 bg-black/60 backdrop-blur-xl px-5 py-2.5 rounded-full border border-white/10 shadow-2xl text-white">
+        {/* Previous Button */}
+        <button
+          onClick={goToPrev}
+          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          title="Previous Image"
+        >
+          <ChevronLeft size={18} />
+        </button>
 
-          {/* Previous Button */}
-          <button
-            onClick={goToPrev}
-            disabled={activeIndex === 0}
-            className="p-2 rounded-lg bg-white/10 hover:bg-emerald-500/30 text-white disabled:opacity-40 disabled:hover:bg-white/10 transition-colors"
-            title="Previous Slide"
-          >
-            <ChevronLeft size={18} />
-          </button>
+        {/* Slide Counter */}
+        <span className="font-mono text-xs text-emerald-400 font-bold px-2">
+          {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
+        </span>
 
-          {/* Slide Indicator */}
-          <span className="px-3 py-1 text-xs font-mono text-emerald-400 bg-black/40 rounded-md border border-white/5">
-            {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
-          </span>
+        {/* Autoplay Play/Pause */}
+        <button
+          onClick={() => setIsPlaying(!isPlaying)}
+          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          title={isPlaying ? "Pause Ambient Motion" : "Resume Ambient Motion"}
+        >
+          {isPlaying ? <Pause size={15} /> : <Play size={15} />}
+        </button>
 
-          {/* Next Button */}
-          <button
-            onClick={goToNext}
-            disabled={activeIndex === items.length - 1}
-            className="p-2 rounded-lg bg-white/10 hover:bg-emerald-500/30 text-white disabled:opacity-40 disabled:hover:bg-white/10 transition-colors"
-            title="Next Slide"
-          >
-            <ChevronRight size={18} />
-          </button>
+        {/* Next Button */}
+        <button
+          onClick={goToNext}
+          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          title="Next Image"
+        >
+          <ChevronRight size={18} />
+        </button>
 
-          {/* Lightbox / Zoom */}
-          <button
-            onClick={() => {
-              setModalItem(currentItem);
-              setModalIndex(activeIndex);
-            }}
-            className="p-2 rounded-lg bg-white/10 hover:bg-white/20 text-white transition-colors"
-            title="View Fullscreen"
-          >
-            <Maximize2 size={16} />
-          </button>
-        </div>
+        <div className="h-4 w-px bg-white/20 mx-1" />
+
+        {/* Expand Modal */}
+        <button
+          onClick={() => {
+            setModalItem(items[activeIndex]);
+            setModalIndex(activeIndex);
+          }}
+          className="p-2 rounded-full hover:bg-white/20 text-white transition-colors"
+          title="Fullscreen View"
+        >
+          <Maximize2 size={15} />
+        </button>
       </div>
 
-      {/* Interactive Disintegration Canvas */}
-      <div className="relative w-full h-[460px] sm:h-[540px] lg:h-[620px] bg-[#08090c] cursor-grab active:cursor-grabbing">
-        <canvas
-          ref={canvasRef}
-          onPointerDown={handlePointerDown}
-          onPointerMove={handlePointerMove}
-          onPointerUp={handlePointerUp}
-          className="w-full h-full block"
-        />
-
-        {/* Ambient Subtle Hint on Hover */}
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 pointer-events-none text-center">
-          <span className="inline-flex items-center space-x-2 text-[11px] font-mono tracking-widest text-zinc-500 bg-black/50 backdrop-blur-md px-3 py-1 rounded-full border border-white/5">
-            <MousePointer size={12} className="text-emerald-400" />
-            <span>DRAG HORIZONTALLY • CLICK CENTER TO EXPAND</span>
-          </span>
-        </div>
-      </div>
-
-      {/* Active Card Story Banner */}
-      <div className="relative z-20 px-6 py-6 bg-zinc-950 border-t border-white/10 text-white">
-        <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-center justify-between gap-4">
-          <div className="space-y-1">
-            <div className="flex items-center space-x-2">
-              <span className="text-xs font-bold font-mono text-emerald-400 uppercase tracking-wider bg-emerald-500/10 px-2.5 py-0.5 rounded border border-emerald-500/20">
-                {currentItem.category || "AUNSF 2026"}
-              </span>
-              <span className="text-xs text-zinc-400 font-mono">
-                Slide {activeIndex + 1} of {items.length}
-              </span>
-            </div>
-            <h3 className="text-lg md:text-xl font-bold tracking-tight text-white">
-              {currentItem.title}
-            </h3>
-            {currentItem.subtitle && (
-              <p className="text-xs md:text-sm font-medium text-emerald-400/90">
-                {currentItem.subtitle}
-              </p>
-            )}
-            {currentItem.description && (
-              <p className="text-xs md:text-sm text-zinc-400 leading-relaxed max-w-2xl pt-1">
-                {currentItem.description}
-              </p>
-            )}
-          </div>
-
-          <div className="flex items-center space-x-3 shrink-0">
-            <button
-              onClick={() => {
-                setModalItem(currentItem);
-                setModalIndex(activeIndex);
-              }}
-              className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-zinc-950 font-bold text-xs transition-colors shadow-lg shadow-emerald-500/20"
-            >
-              <Maximize2 size={14} />
-              <span>Expand Photograph</span>
-            </button>
-          </div>
-        </div>
-
-        {/* Thumbnail Navigation Scrubber */}
-        <div className="max-w-5xl mx-auto mt-6 pt-4 border-t border-white/5 flex items-center space-x-2 overflow-x-auto py-2 hide-scrollbar">
-          {items.map((item, idx) => {
-            const isActive = idx === activeIndex;
-            return (
-              <button
-                key={item.id}
-                onClick={() => {
-                  const s = scrollRef.current;
-                  s.target = idx * s.pitch;
-                }}
-                className={`relative shrink-0 w-12 h-12 rounded-lg overflow-hidden border-2 transition-all duration-300 ${
-                  isActive 
-                    ? "border-emerald-400 scale-110 shadow-[0_0_12px_rgba(16,185,129,0.5)] opacity-100" 
-                    : "border-white/10 opacity-40 hover:opacity-80 hover:border-white/40"
-                }`}
-                title={item.title}
-              >
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={item.image}
-                  alt={item.title}
-                  className="w-full h-full object-cover"
-                />
-              </button>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Fullscreen High-Res Lightbox Modal */}
+      {/* Fullscreen High-Res Modal (Clean without titles) */}
       {modalItem && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-xl p-4 sm:p-8 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 sm:p-8 animate-in fade-in duration-200"
           onClick={() => setModalItem(null)}
         >
           <div 
-            className="relative max-w-5xl w-full max-h-[90vh] flex flex-col items-center bg-zinc-900 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
-            <div className="w-full flex items-center justify-between px-6 py-4 bg-black/40 border-b border-white/10 text-white">
-              <div>
-                <span className="text-xs font-mono text-emerald-400 font-bold uppercase tracking-wider">
-                  {modalItem.category || "AUNSF 2026"} • {modalIndex + 1} of {items.length}
-                </span>
-                <h4 className="text-base font-bold text-white">{modalItem.title}</h4>
-              </div>
+            <div className="w-full flex items-center justify-between px-6 py-3.5 bg-black/50 border-b border-white/10 text-white">
+              <span className="text-xs font-mono text-emerald-400 font-bold tracking-wider">
+                {modalIndex + 1} / {items.length}
+              </span>
               <button
                 onClick={() => setModalItem(null)}
                 className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
@@ -719,16 +604,16 @@ export default function DisintegratingCarousel({
               </button>
             </div>
 
-            {/* Modal Image View */}
-            <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-black/60 overflow-hidden min-h-[300px]">
+            {/* Modal Image */}
+            <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-black/80 overflow-hidden min-h-[350px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={modalItem.image}
-                alt={modalItem.title}
-                className="max-h-[65vh] w-auto object-contain rounded-lg shadow-2xl"
+                alt=""
+                className="max-h-[75vh] w-auto object-contain rounded-lg shadow-2xl"
               />
 
-              {/* Modal Navigation Arrows */}
+              {/* Prev/Next arrows in modal */}
               <button
                 onClick={() => {
                   const prev = (modalIndex - 1 + items.length) % items.length;
@@ -737,7 +622,7 @@ export default function DisintegratingCarousel({
                   const s = scrollRef.current;
                   s.target = prev * s.pitch;
                 }}
-                className="absolute left-4 p-3 rounded-full bg-black/60 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10 backdrop-blur-md"
+                className="absolute left-4 p-3 rounded-full bg-black/70 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10"
               >
                 <ChevronLeft size={24} />
               </button>
@@ -750,18 +635,11 @@ export default function DisintegratingCarousel({
                   const s = scrollRef.current;
                   s.target = next * s.pitch;
                 }}
-                className="absolute right-4 p-3 rounded-full bg-black/60 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10 backdrop-blur-md"
+                className="absolute right-4 p-3 rounded-full bg-black/70 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10"
               >
                 <ChevronRight size={24} />
               </button>
             </div>
-
-            {/* Modal Footer Caption */}
-            {modalItem.description && (
-              <div className="w-full px-6 py-4 bg-zinc-950 border-t border-white/10 text-xs md:text-sm text-zinc-300">
-                {modalItem.description}
-              </div>
-            )}
           </div>
         </div>
       )}
