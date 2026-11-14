@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useState } from "react";
 import { Canvas, useFrame, useThree } from "@react-three/fiber";
 import { useTexture, OrthographicCamera } from "@react-three/drei";
 import * as THREE from "three";
-import { useScroll } from "framer-motion";
+import { useScroll, MotionValue } from "framer-motion";
 import { cn } from "@/lib/utils";
 
 const coverVertexShader = `
@@ -268,10 +268,10 @@ const coverFragmentShaderReverse = `
 interface SceneProps {
   imageFront: string;
   imageBack: string;
-  scrollYProgress: any;
+  scrollYProgress: MotionValue<number>;
 }
 
-const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
+const TwoImageScene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
   const [texture1, texture2] = useTexture([imageFront, imageBack]);
   const material1Ref = useRef<THREE.ShaderMaterial>(null);
   const material2Ref = useRef<THREE.ShaderMaterial>(null);
@@ -288,7 +288,7 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
       uTexture: { value: texture1 },
       uResolution: { value: new THREE.Vector2(size.width, size.height) },
       uImageResolution: {
-        value: new THREE.Vector2((texture1.image as any).width, (texture1.image as any).height),
+        value: new THREE.Vector2((texture1.image as any)?.width || 1920, (texture1.image as any)?.height || 1080),
       },
       uDissolve: { value: 0.0 },
       uCenter: { value: new THREE.Vector2(0.5, 0.5) },
@@ -305,7 +305,7 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
       uTexture: { value: texture2 },
       uResolution: { value: new THREE.Vector2(size.width, size.height) },
       uImageResolution: {
-        value: new THREE.Vector2((texture2.image as any).width, (texture2.image as any).height),
+        value: new THREE.Vector2((texture2.image as any)?.width || 1920, (texture2.image as any)?.height || 1080),
       },
       uDissolve: { value: 0.0 },
       uCenter: { value: new THREE.Vector2(0.5, 0.5) },
@@ -324,11 +324,7 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
 
     if (material1Ref.current) {
       material1Ref.current.uniforms.uTime.value = timeInSeconds;
-      material1Ref.current.uniforms.uResolution.value.set(
-        size.width,
-        size.height
-      );
-
+      material1Ref.current.uniforms.uResolution.value.set(size.width, size.height);
       material1Ref.current.uniforms.uDissolve.value = progress;
       const grayscaleProgress = Math.min(1.0, progress / 0.4);
       material1Ref.current.uniforms.uGrayscale.value = grayscaleProgress;
@@ -338,12 +334,220 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
 
     if (material2Ref.current) {
       material2Ref.current.uniforms.uTime.value = timeInSeconds;
-      material2Ref.current.uniforms.uResolution.value.set(
-        size.width,
-        size.height
-      );
-
+      material2Ref.current.uniforms.uResolution.value.set(size.width, size.height);
       const acceleratedProgress = Math.min(1.0, progress * 1.1);
+      material2Ref.current.uniforms.uEdgeIntensity.value = 0.6 * (1.0 - acceleratedProgress);
+      material2Ref.current.uniforms.uDarkness.value = 1.0 - acceleratedProgress;
+      material2Ref.current.uniforms.uGrayscale.value = 1.0 - acceleratedProgress;
+    }
+  });
+
+  return (
+    <>
+      <mesh position={[0, 0, -0.1]}>
+        <planeGeometry args={[2, 2]} />
+        <shaderMaterial
+          ref={material2Ref}
+          vertexShader={coverVertexShader}
+          fragmentShader={coverFragmentShaderReverse}
+          uniforms={uniforms2}
+          transparent={true}
+        />
+      </mesh>
+      <mesh position={[0, 0, 0]}>
+        <planeGeometry args={[2, 2]} />
+        <shaderMaterial
+          ref={material1Ref}
+          vertexShader={coverVertexShader}
+          fragmentShader={coverFragmentShader}
+          uniforms={uniforms1}
+          transparent={true}
+        />
+      </mesh>
+    </>
+  );
+};
+
+interface MultiImageSceneProps {
+  images: string[];
+  scrollYProgress: MotionValue<number>;
+  onIndexChange?: (index: number) => void;
+}
+
+const MultiImageScene = ({
+  images,
+  scrollYProgress,
+  onIndexChange,
+}: MultiImageSceneProps) => {
+  const { size } = useThree();
+  const invalidate = useThree((state) => state.invalidate);
+
+  const textureLoader = useMemo(() => new THREE.TextureLoader(), []);
+  const cacheRef = useRef<Map<string, THREE.Texture>>(new Map());
+  const resCacheRef = useRef<Map<string, THREE.Vector2>>(new Map());
+
+  const getOrLoadTexture = (url: string) => {
+    if (!url) return null;
+    if (cacheRef.current.has(url)) {
+      return cacheRef.current.get(url)!;
+    }
+    const tex = textureLoader.load(url, (t) => {
+      t.generateMipmaps = false;
+      t.minFilter = THREE.LinearFilter;
+      t.magFilter = THREE.LinearFilter;
+      if (t.image) {
+        resCacheRef.current.set(
+          url,
+          new THREE.Vector2((t.image as any).width || 1920, (t.image as any).height || 1080)
+        );
+      }
+      invalidate();
+    });
+    tex.generateMipmaps = false;
+    tex.minFilter = THREE.LinearFilter;
+    tex.magFilter = THREE.LinearFilter;
+    cacheRef.current.set(url, tex);
+    return tex;
+  };
+
+  // Preload first 6 images immediately
+  useEffect(() => {
+    const preloadCount = Math.min(images.length, 6);
+    for (let i = 0; i < preloadCount; i++) {
+      getOrLoadTexture(images[i]);
+    }
+  }, [images]);
+
+  useEffect(() => {
+    const unsubscribe = scrollYProgress.on("change", () => invalidate());
+    return () => unsubscribe();
+  }, [invalidate, scrollYProgress]);
+
+  const initialTex1 = useMemo(
+    () => getOrLoadTexture(images[0]) || new THREE.Texture(),
+    [images]
+  );
+  const initialTex2 = useMemo(
+    () => getOrLoadTexture(images[1] || images[0]) || new THREE.Texture(),
+    [images]
+  );
+
+  const uniforms1 = useMemo(
+    () => ({
+      uTexture: { value: initialTex1 },
+      uResolution: { value: new THREE.Vector2(size.width, size.height) },
+      uImageResolution: { value: new THREE.Vector2(1920, 1080) },
+      uDissolve: { value: 0.0 },
+      uCenter: { value: new THREE.Vector2(0.5, 0.5) },
+      uTime: { value: 0.0 },
+      uGrayscale: { value: 0.0 },
+      uEdgeIntensity: { value: 0.0 },
+      uEdgeBrightness: { value: 1.0 },
+    }),
+    [size]
+  );
+
+  const uniforms2 = useMemo(
+    () => ({
+      uTexture: { value: initialTex2 },
+      uResolution: { value: new THREE.Vector2(size.width, size.height) },
+      uImageResolution: { value: new THREE.Vector2(1920, 1080) },
+      uDissolve: { value: 0.0 },
+      uCenter: { value: new THREE.Vector2(0.5, 0.5) },
+      uTime: { value: 0.0 },
+      uBrightness: { value: 0.0 },
+      uEdgeIntensity: { value: 0.6 },
+      uDarkness: { value: 1.0 },
+      uGrayscale: { value: 1.0 },
+    }),
+    [size]
+  );
+
+  const material1Ref = useRef<THREE.ShaderMaterial>(null);
+  const material2Ref = useRef<THREE.ShaderMaterial>(null);
+  const lastIndexRef = useRef<number>(-1);
+
+  useFrame((state) => {
+    if (!images || images.length === 0) return;
+    const timeInSeconds = state.clock.getElapsedTime();
+    const progress = Math.max(0.0, Math.min(0.99999, scrollYProgress.get()));
+
+    const totalSteps = images.length - 1;
+    const scaledProgress = progress * totalSteps;
+    const currentIndex = Math.min(Math.floor(scaledProgress), totalSteps - 1);
+    const localProgress = scaledProgress - currentIndex; // 0.0 to 1.0
+
+    if (currentIndex !== lastIndexRef.current) {
+      lastIndexRef.current = currentIndex;
+      onIndexChange?.(currentIndex);
+
+      // Preload window of textures around current index
+      for (let offset = -2; offset <= 5; offset++) {
+        const targetIdx = currentIndex + offset;
+        if (targetIdx >= 0 && targetIdx < images.length) {
+          getOrLoadTexture(images[targetIdx]);
+        }
+      }
+
+      // Memory cleanup: dispose textures more than 16 items away
+      if (cacheRef.current.size > 24) {
+        for (const [url, tex] of cacheRef.current.entries()) {
+          const idx = images.indexOf(url);
+          if (idx !== -1 && Math.abs(idx - currentIndex) > 16) {
+            tex.dispose();
+            cacheRef.current.delete(url);
+            resCacheRef.current.delete(url);
+          }
+        }
+      }
+    }
+
+    const frontUrl = images[currentIndex];
+    const backUrl = images[currentIndex + 1] || images[currentIndex];
+
+    const frontTex = getOrLoadTexture(frontUrl);
+    const backTex = getOrLoadTexture(backUrl);
+
+    if (material1Ref.current && frontTex) {
+      if (material1Ref.current.uniforms.uTexture.value !== frontTex) {
+        material1Ref.current.uniforms.uTexture.value = frontTex;
+      }
+      const frontRes = resCacheRef.current.get(frontUrl);
+      if (frontRes) {
+        material1Ref.current.uniforms.uImageResolution.value.copy(frontRes);
+      } else if ((frontTex.image as any)?.width) {
+        material1Ref.current.uniforms.uImageResolution.value.set(
+          (frontTex.image as any).width,
+          (frontTex.image as any).height
+        );
+      }
+
+      material1Ref.current.uniforms.uTime.value = timeInSeconds;
+      material1Ref.current.uniforms.uResolution.value.set(size.width, size.height);
+      material1Ref.current.uniforms.uDissolve.value = localProgress;
+      const grayscaleProgress = Math.min(1.0, localProgress / 0.4);
+      material1Ref.current.uniforms.uGrayscale.value = grayscaleProgress;
+      material1Ref.current.uniforms.uEdgeIntensity.value = localProgress * 0.5;
+      material1Ref.current.uniforms.uEdgeBrightness.value = 1.0 - localProgress;
+    }
+
+    if (material2Ref.current && backTex) {
+      if (material2Ref.current.uniforms.uTexture.value !== backTex) {
+        material2Ref.current.uniforms.uTexture.value = backTex;
+      }
+      const backRes = resCacheRef.current.get(backUrl);
+      if (backRes) {
+        material2Ref.current.uniforms.uImageResolution.value.copy(backRes);
+      } else if ((backTex.image as any)?.width) {
+        material2Ref.current.uniforms.uImageResolution.value.set(
+          (backTex.image as any).width,
+          (backTex.image as any).height
+        );
+      }
+
+      material2Ref.current.uniforms.uTime.value = timeInSeconds;
+      material2Ref.current.uniforms.uResolution.value.set(size.width, size.height);
+      const acceleratedProgress = Math.min(1.0, localProgress * 1.1);
       material2Ref.current.uniforms.uEdgeIntensity.value =
         0.6 * (1.0 - acceleratedProgress);
       material2Ref.current.uniforms.uDarkness.value =
@@ -380,33 +584,49 @@ const Scene = ({ imageFront, imageBack, scrollYProgress }: SceneProps) => {
 };
 
 export interface ScrollDissolveRevealProps {
-  imageFront: string;
-  imageBack: string;
+  imageFront?: string;
+  imageBack?: string;
+  images?: string[];
   className?: string;
   containerClassName?: string;
   scrollContainerRef?: React.RefObject<HTMLElement | null>;
   children?: React.ReactNode;
+  onActiveIndexChange?: (index: number) => void;
+  containerRef?: React.RefObject<HTMLDivElement | null>;
 }
 
 export function ScrollDissolveReveal({
   imageFront,
   imageBack,
+  images,
   className,
   containerClassName,
   scrollContainerRef,
   children,
+  onActiveIndexChange,
+  containerRef: externalContainerRef,
 }: ScrollDissolveRevealProps) {
-  const containerRef = useRef<HTMLDivElement>(null);
+  const internalContainerRef = useRef<HTMLDivElement>(null);
+  const containerRef = externalContainerRef || internalContainerRef;
+
   const { scrollYProgress } = useScroll({
     target: containerRef,
     offset: ["start start", "end end"],
-    ...(scrollContainerRef && { container: scrollContainerRef })
+    ...(scrollContainerRef && { container: scrollContainerRef }),
   });
+
+  const isMulti = Boolean(images && images.length > 1);
+
+  // Dynamic height for multi-image sequential scrolling (approx 75vh per transition)
+  const dynamicHeight = isMulti
+    ? `${Math.max(300, (images?.length || 2) * 80)}vh`
+    : "300vh";
 
   return (
     <div
       ref={containerRef}
-      className={cn("relative h-[300vh] w-full", containerClassName)}
+      style={{ height: dynamicHeight }}
+      className={cn("relative w-full", containerClassName)}
     >
       <div className={cn("sticky top-0 h-screen w-full overflow-hidden", className)}>
         <Canvas dpr={[1, 2]} frameloop="demand" gl={{ antialias: false, alpha: false }}>
@@ -422,11 +642,19 @@ export function ScrollDissolveReveal({
             position={[0, 0, 1]}
           />
           <React.Suspense fallback={null}>
-            <Scene
-              imageFront={imageFront}
-              imageBack={imageBack}
-              scrollYProgress={scrollYProgress}
-            />
+            {isMulti && images ? (
+              <MultiImageScene
+                images={images}
+                scrollYProgress={scrollYProgress}
+                onIndexChange={onActiveIndexChange}
+              />
+            ) : imageFront && imageBack ? (
+              <TwoImageScene
+                imageFront={imageFront}
+                imageBack={imageBack}
+                scrollYProgress={scrollYProgress}
+              />
+            ) : null}
           </React.Suspense>
         </Canvas>
         {children}
