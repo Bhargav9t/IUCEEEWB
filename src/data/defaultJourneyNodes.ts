@@ -264,14 +264,14 @@ export const DEFAULT_JOURNEY_NODES: JourneyNodeData[] = [
     sort_order: 27
   },
   {
-    id: "esparto-hhc",
-    node_id: "esparto-hhc",
+    id: "esparto-2026",
+    node_id: "esparto-2026",
     date: "OCT 09, 2026",
-    title: "esparto:iuceeewbhitamXHHC",
-    desc: "Collaborative flagship event and youth initiative with Helping Hearts Club.",
-    icon: "HeartHandshake",
+    title: "ESPARTO 2026",
+    desc: "Flagship technical collaboration between IUCEE-EWB HITAM and HITAM Hackathon Club (HHC).",
+    icon: "Code",
     image: "/images/events/esparto-hhc/esparto-01.jpg",
-    link: "/esparto-hhc",
+    link: "/esparto-2026",
     sort_order: 28
   },
   {

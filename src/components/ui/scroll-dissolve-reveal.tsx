@@ -91,15 +91,27 @@ const coverFragmentShader = `
   }
 
   void main() {
-    vec2 ratio = vec2(
-      min((uResolution.x / uResolution.y) / (uImageResolution.x / uImageResolution.y), 1.0),
-      min((uResolution.y / uResolution.x) / (uImageResolution.y / uImageResolution.x), 1.0)
-    );
+    float screenAspect = uResolution.x / max(uResolution.y, 1.0);
+    float imageAspect = uImageResolution.x / max(uImageResolution.y, 1.0);
 
-    vec2 uv = vec2(
-      vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
-      vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
-    );
+    // Fit image cleanly within viewport so people and faces are never cropped out
+    float fitFactor = 0.92;
+    vec2 scale = vec2(1.0);
+    if (screenAspect > imageAspect) {
+      scale.x = (imageAspect / screenAspect) * fitFactor;
+      scale.y = fitFactor;
+    } else {
+      scale.y = (screenAspect / imageAspect) * fitFactor;
+      scale.x = fitFactor;
+    }
+
+    vec2 uv = (vUv - 0.5) / scale + 0.5;
+    bool inBounds = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+
+    if (!inBounds) {
+      gl_FragColor = vec4(0.0);
+      return;
+    }
 
     vec4 texColor = texture2D(uTexture, uv);
     
@@ -205,15 +217,27 @@ const coverFragmentShaderReverse = `
   }
 
   void main() {
-    vec2 ratio = vec2(
-      min((uResolution.x / uResolution.y) / (uImageResolution.x / uImageResolution.y), 1.0),
-      min((uResolution.y / uResolution.x) / (uImageResolution.y / uImageResolution.x), 1.0)
-    );
+    float screenAspect = uResolution.x / max(uResolution.y, 1.0);
+    float imageAspect = uImageResolution.x / max(uImageResolution.y, 1.0);
 
-    vec2 uv = vec2(
-      vUv.x * ratio.x + (1.0 - ratio.x) * 0.5,
-      vUv.y * ratio.y + (1.0 - ratio.y) * 0.5
-    );
+    // Fit image cleanly within viewport so people and faces are never cropped out
+    float fitFactor = 0.92;
+    vec2 scale = vec2(1.0);
+    if (screenAspect > imageAspect) {
+      scale.x = (imageAspect / screenAspect) * fitFactor;
+      scale.y = fitFactor;
+    } else {
+      scale.y = (screenAspect / imageAspect) * fitFactor;
+      scale.x = fitFactor;
+    }
+
+    vec2 uv = (vUv - 0.5) / scale + 0.5;
+    bool inBounds = uv.x >= 0.0 && uv.x <= 1.0 && uv.y >= 0.0 && uv.y <= 1.0;
+
+    if (!inBounds) {
+      gl_FragColor = vec4(0.0);
+      return;
+    }
 
     vec4 texColor = texture2D(uTexture, uv);
     

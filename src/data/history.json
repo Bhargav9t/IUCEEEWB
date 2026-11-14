@@ -222,15 +222,15 @@
   },
   {
     "date": "Oct 09, 2026",
-    "eventName": "esparto:iuceeewbhitamXHHC",
-    "description": "Collaborative flagship event and youth initiative with Helping Hearts Club.",
-    "highlights": "Community outreach, student volunteering, cultural and technical activities.",
-    "outcomes": "Strengthened community ties and expanded youth participation.",
+    "eventName": "ESPARTO 2026",
+    "description": "Flagship collaboration between IUCEE-EWB HITAM and HITAM Hackathon Club (HHC).",
+    "highlights": "Joint hackathon challenges, code sprints, technical problem formulation, and cross-domain innovation.",
+    "outcomes": "Uniting software developers and humanitarian engineers on sustainable real-world problem statements.",
     "type": "regular",
     "rawObj": {
       "date": "Oct 09, 2026",
-      "eventname": "esparto:iuceeewbhitamXHHC",
-      "keyhighlights": "Community outreach, student volunteering, cultural and technical activities."
+      "eventname": "ESPARTO 2026",
+      "keyhighlights": "Joint hackathon challenges, code sprints, technical problem formulation, and cross-domain innovation."
     }
   }
 ]
