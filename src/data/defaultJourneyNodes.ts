@@ -253,12 +253,23 @@ export const DEFAULT_JOURNEY_NODES: JourneyNodeData[] = [
     sort_order: 26
   },
   {
+    id: "aunsf-2026",
+    node_id: "aunsf-2026",
+    date: "MAY 2026",
+    title: "AUNSF 2026",
+    desc: "Anurag University National Student Forum delegation, project demonstrations, and cross-chapter conclaves.",
+    icon: "Globe",
+    image: "/images/events/aunsf-2026/aunsf-01.jpg",
+    link: "/aunsf-2026",
+    sort_order: 27
+  },
+  {
     id: "21",
     node_id: "21",
     date: "FUTURE",
     title: "TO BE CONTINUED...",
     desc: "Our journey of impact and innovation never stops.",
     icon: "Hourglass",
-    sort_order: 27
+    sort_order: 28
   }
 ];

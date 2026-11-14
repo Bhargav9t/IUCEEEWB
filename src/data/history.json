@@ -206,5 +206,18 @@
       "eventname": "RO Plant Installation",
       "keyhighlights": "Implementing a funded safe drinking water project at ZPHS Gowdavally."
     }
+  },
+  {
+    "date": "May 2026",
+    "eventName": "AUNSF 2026",
+    "description": "Anurag University National Student Forum delegation, technical expositions, and cross-chapter conclaves.",
+    "highlights": "Showcasing student prototypes, paper defenses, and inter-chapter partnerships.",
+    "outcomes": "Recognitions in technical tracks and collaborative roadmaps with national chapters.",
+    "type": "regular",
+    "rawObj": {
+      "date": "May 2026",
+      "eventname": "AUNSF 2026",
+      "keyhighlights": "Showcasing student prototypes, paper defenses, and inter-chapter partnerships."
+    }
   }
 ]
