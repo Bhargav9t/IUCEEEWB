@@ -251,7 +251,20 @@ export default function SnakeTimeline() {
                   {/* Anchor Center */}
                   <div className="absolute w-0 h-0" style={{ transform: 'translate(-50%, -50%)' }}>
                      {/* Glowing Pulse Node */}
-                     <div className={`relative w-7 h-7 rounded-full bg-white border-[3px] ${theme.nodeBorder} group-hover:scale-125 transition-transform duration-300 z-30 flex items-center justify-center cursor-pointer animate-pulse mx-auto`}>
+                     <div 
+                       onClick={() => {
+                          if ("link" in event && event.link && event.link.trim() !== "" && event.link !== "#") {
+                            if (event.link.startsWith("/")) {
+                              window.location.href = event.link;
+                            } else {
+                              window.open(event.link, "_blank");
+                            }
+                          } else if ("image" in event && event.image && event.image.trim() !== "") {
+                            setSelectedImage((event as any).image);
+                          }
+                       }}
+                       className={`relative w-7 h-7 rounded-full bg-white border-[3px] ${theme.nodeBorder} group-hover:scale-125 transition-transform duration-300 z-30 flex items-center justify-center cursor-pointer animate-pulse mx-auto`}
+                     >
                         <div className={`w-2 h-2 rounded-full ${theme.nodeInner} group-hover:bg-white transition-colors`} />
                      </div>
 
@@ -336,7 +349,20 @@ export default function SnakeTimeline() {
                       className="relative pl-[72px] sm:pl-[96px] pr-2 group pointer-events-auto"
                     >
                       {/* Node Target */}
-                      <div className={`absolute left-[38px] sm:left-[50px] top-8 w-6 h-6 rounded-full bg-white border-[3px] ${theme.nodeBorder} animate-pulse flex items-center justify-center -translate-x-1/2 -translate-y-1/2`}>
+                      <div 
+                        onClick={() => {
+                          if ("link" in event && event.link && event.link.trim() !== "" && event.link !== "#") {
+                            if (event.link.startsWith("/")) {
+                              window.location.href = event.link;
+                            } else {
+                              window.open(event.link, "_blank");
+                            }
+                          } else if ("image" in event && event.image && event.image.trim() !== "") {
+                            setSelectedImage((event as any).image);
+                          }
+                        }}
+                        className={`absolute left-[38px] sm:left-[50px] top-8 w-6 h-6 rounded-full bg-white border-[3px] ${theme.nodeBorder} animate-pulse flex items-center justify-center -translate-x-1/2 -translate-y-1/2 cursor-pointer z-20`}
+                      >
                          <div className={`w-1.5 h-1.5 rounded-full ${theme.nodeInner}`} />
                       </div>
 

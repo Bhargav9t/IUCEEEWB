@@ -20,8 +20,10 @@ const FacebookIcon = ({ size = 24 }: { size?: number }) => (
 
 export default function Footer() {
   const pathname = usePathname();
-  if (pathname === "/aunsf-2026") return null;
   const isAdmin = pathname?.startsWith("/admin");
+  const isAunsf = pathname?.includes("aunsf");
+
+  if (isAunsf) return null;
 
   return (
     <footer className="bg-zinc-50 border-t border-zinc-200 dark:bg-[#020202] dark:border-white/10 transition-colors duration-300">

@@ -1,14 +1,17 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import Link from "next/link";
 import { 
   ChevronLeft, 
   ChevronRight, 
   Play, 
   Pause, 
   Maximize2, 
-  X 
+  X,
+  ArrowLeft
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { AunsfImageItem } from "@/data/aunsfData";
 
 interface DisintegratingCarouselProps {
@@ -105,6 +108,13 @@ export default function DisintegratingCarousel({
   className = "",
   autoplayInitial = true
 }: DisintegratingCarouselProps) {
+  const { resolvedTheme } = useTheme();
+  const isDarkRef = useRef(true);
+
+  useEffect(() => {
+    isDarkRef.current = resolvedTheme !== "light";
+  }, [resolvedTheme]);
+
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
 
@@ -141,13 +151,13 @@ export default function DisintegratingCarousel({
     velocity: 0,
     lastFrameTime: performance.now(),
     width: 1200,
-    height: 800,
-    cardW: 390,
-    cardH: 540,
-    gap: 52,
-    pitch: 442,
-    cols: 26,
-    rows: 36,
+    height: 700,
+    cardW: 380,
+    cardH: 520,
+    gap: 48,
+    pitch: 428,
+    cols: 25,
+    rows: 35,
     blockSize: 15
   });
 
@@ -190,7 +200,7 @@ export default function DisintegratingCarousel({
       const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
       const w = Math.floor(rect.width);
-      const h = Math.floor(rect.height || window.innerHeight);
+      const h = Math.floor(rect.height);
 
       canvas.width = w * dpr;
       canvas.height = h * dpr;
@@ -200,10 +210,10 @@ export default function DisintegratingCarousel({
       ctx.resetTransform();
       ctx.scale(dpr, dpr);
 
-      // Card sizing
-      const cardH = w < 640 ? Math.min(420, h * 0.62) : Math.min(540, h * 0.68);
+      // Card sizing adapted to available container space
+      const cardH = w < 640 ? Math.min(380, h * 0.65) : Math.min(500, h * 0.74);
       const cardW = Math.round(cardH * 0.72);
-      const gap = w < 640 ? 32 : 52;
+      const gap = w < 640 ? 28 : 48;
       const blockSize = w < 640 ? 12 : 15;
       const cols = Math.floor(cardW / blockSize);
       const rows = Math.floor(cardH / blockSize);
@@ -236,10 +246,11 @@ export default function DisintegratingCarousel({
       const dt = Math.min((now - s.lastFrameTime) / 1000, 0.1);
       s.lastFrameTime = now;
       const N = items.length;
+      const isDark = isDarkRef.current;
 
-      // Slow ambient movement
+      // Slower ambient continuous drift
       if (isPlaying && !s.isDragging && !isHovered) {
-        s.target += dt * 32;
+        s.target += dt * 30;
       } else if (!s.isDragging) {
         s.velocity *= 0.94;
         s.target += s.velocity * dt * 60;
@@ -261,18 +272,24 @@ export default function DisintegratingCarousel({
       const normalizedActiveIndex = ((rawCurrentIndex % N) + N) % N;
       setActiveIndex(normalizedActiveIndex);
 
-      // Deep dark canvas background
-      ctx.fillStyle = "#08090c";
+      // Theme-adaptive canvas background
+      ctx.fillStyle = isDark ? "#08090c" : "#f8fafc";
       ctx.fillRect(0, 0, s.width, s.height);
 
-      // Atmospheric vignette
+      // Theme-adaptive atmospheric vignette
       const gradient = ctx.createRadialGradient(
-        s.width / 2, s.height / 2, 80,
-        s.width / 2, s.height / 2, s.width * 0.75
+        s.width / 2, s.height / 2, 60,
+        s.width / 2, s.height / 2, s.width * 0.72
       );
-      gradient.addColorStop(0, "rgba(16, 185, 129, 0.05)");
-      gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.02)");
-      gradient.addColorStop(1, "rgba(8, 9, 12, 0.98)");
+      if (isDark) {
+        gradient.addColorStop(0, "rgba(16, 185, 129, 0.06)");
+        gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.02)");
+        gradient.addColorStop(1, "rgba(8, 9, 12, 0.98)");
+      } else {
+        gradient.addColorStop(0, "rgba(16, 185, 129, 0.08)");
+        gradient.addColorStop(0.5, "rgba(6, 182, 212, 0.04)");
+        gradient.addColorStop(1, "rgba(248, 250, 252, 0.95)");
+      }
       ctx.fillStyle = gradient;
       ctx.fillRect(0, 0, s.width, s.height);
 
@@ -298,7 +315,6 @@ export default function DisintegratingCarousel({
         const normOffset = offsetFromCenter / s.pitch;
         const absOffset = Math.abs(normOffset);
 
-        // Disintegration zone:
         // Central area (|absOffset| <= 0.35) remains 100% SOLID & PRISTINE
         let progress = 0;
         let direction: "left" | "right" = "left";
@@ -308,23 +324,23 @@ export default function DisintegratingCarousel({
           direction = normOffset < 0 ? "left" : "right";
         }
 
-        // Case 1: Centered / Solid intact card (zero holes, crisp photo)
+        // Case 1: Centered / Solid intact card
         if (progress <= 0 || !scratchCanvasRef.current) {
           if (img) {
             ctx.save();
-            ctx.shadowColor = "rgba(16, 185, 129, 0.22)";
-            ctx.shadowBlur = 24;
+            ctx.shadowColor = isDark ? "rgba(16, 185, 129, 0.25)" : "rgba(0, 0, 0, 0.12)";
+            ctx.shadowBlur = isDark ? 24 : 16;
             drawImageCover(ctx, img, cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.restore();
 
             // Inner subtle border
-            ctx.strokeStyle = "rgba(255, 255, 255, 0.12)";
+            ctx.strokeStyle = isDark ? "rgba(255, 255, 255, 0.12)" : "rgba(0, 0, 0, 0.12)";
             ctx.lineWidth = 1;
             ctx.beginPath();
             ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.stroke();
           } else {
-            ctx.fillStyle = "#14151a";
+            ctx.fillStyle = isDark ? "#14151a" : "#e2e8f0";
             ctx.beginPath();
             ctx.roundRect(cardLeft, cardTop, s.cardW, s.cardH, 10);
             ctx.fill();
@@ -420,7 +436,7 @@ export default function DisintegratingCarousel({
             const dustAlpha = (1 - progress * 0.8) * (0.3 + 0.2 * Math.sin(now * 0.002 + d));
 
             ctx.globalAlpha = Math.max(0, dustAlpha);
-            ctx.fillStyle = "rgba(220, 235, 255, 0.7)";
+            ctx.fillStyle = isDark ? "rgba(220, 235, 255, 0.7)" : "rgba(16, 185, 129, 0.65)";
             ctx.fillRect(dustX, dustY, dustSize, dustSize);
           }
           ctx.restore();
@@ -511,12 +527,23 @@ export default function DisintegratingCarousel({
   return (
     <div 
       ref={containerRef}
-      className={`relative w-full h-full select-none overflow-hidden bg-[#08090c] ${className}`}
+      className={`relative w-full h-full select-none overflow-hidden ${className}`}
       onWheel={handleWheel}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
-      {/* Full-Screen Interactive Disintegration Canvas */}
+      {/* Top Floating Back to Timeline pill */}
+      <div className="absolute top-4 left-6 z-30 pointer-events-auto">
+        <Link
+          href="/history"
+          className="inline-flex items-center space-x-2 text-xs font-mono font-bold tracking-wider px-3.5 py-1.5 rounded-full bg-white/85 dark:bg-black/60 backdrop-blur-xl border border-zinc-200 dark:border-white/10 shadow-md text-zinc-700 dark:text-zinc-300 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
+        >
+          <ArrowLeft size={14} />
+          <span>TIMELINE</span>
+        </Link>
+      </div>
+
+      {/* Interactive Disintegration Canvas */}
       <canvas
         ref={canvasRef}
         onPointerDown={handlePointerDown}
@@ -525,23 +552,23 @@ export default function DisintegratingCarousel({
         className="w-full h-full block cursor-grab active:cursor-grabbing"
       />
 
-      {/* Floating Bottom Control Pill */}
-      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3 bg-black/60 backdrop-blur-xl px-5 py-2.5 rounded-full border border-white/10 shadow-2xl text-white">
+      {/* Floating Bottom Control Pill - Adapts seamlessly to Light & Dark themes */}
+      <div className="absolute bottom-6 left-1/2 -translate-x-1/2 z-30 flex items-center space-x-3 bg-white/85 dark:bg-black/60 backdrop-blur-xl px-5 py-2.5 rounded-full border border-zinc-200 dark:border-white/10 shadow-xl dark:shadow-2xl text-zinc-800 dark:text-white transition-colors duration-300">
         <button
           onClick={goToPrev}
-          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          className="p-2 rounded-full hover:bg-emerald-500/20 text-zinc-700 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
           title="Previous Image"
         >
           <ChevronLeft size={18} />
         </button>
 
-        <span className="font-mono text-xs text-emerald-400 font-bold px-2">
+        <span className="font-mono text-xs text-emerald-600 dark:text-emerald-400 font-bold px-2">
           {String(activeIndex + 1).padStart(2, "0")} / {String(items.length).padStart(2, "0")}
         </span>
 
         <button
           onClick={() => setIsPlaying(!isPlaying)}
-          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          className="p-2 rounded-full hover:bg-emerald-500/20 text-zinc-700 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
           title={isPlaying ? "Pause Ambient Motion" : "Resume Ambient Motion"}
         >
           {isPlaying ? <Pause size={15} /> : <Play size={15} />}
@@ -549,49 +576,49 @@ export default function DisintegratingCarousel({
 
         <button
           onClick={goToNext}
-          className="p-2 rounded-full hover:bg-emerald-500/30 text-white transition-colors"
+          className="p-2 rounded-full hover:bg-emerald-500/20 text-zinc-700 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
           title="Next Image"
         >
           <ChevronRight size={18} />
         </button>
 
-        <div className="h-4 w-px bg-white/20 mx-1" />
+        <div className="h-4 w-px bg-zinc-200 dark:bg-white/20 mx-1" />
 
         <button
           onClick={() => {
             setModalItem(items[activeIndex]);
             setModalIndex(activeIndex);
           }}
-          className="p-2 rounded-full hover:bg-white/20 text-white transition-colors"
+          className="p-2 rounded-full hover:bg-emerald-500/20 text-zinc-700 dark:text-zinc-200 hover:text-emerald-600 dark:hover:text-emerald-400 transition-colors"
           title="Fullscreen View"
         >
           <Maximize2 size={15} />
         </button>
       </div>
 
-      {/* Fullscreen Clean Modal */}
+      {/* Fullscreen Clean Modal with Light & Dark Theme Support */}
       {modalItem && (
         <div 
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/95 backdrop-blur-2xl p-4 sm:p-8 animate-in fade-in duration-200"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/85 dark:bg-black/95 backdrop-blur-2xl p-4 sm:p-8 animate-in fade-in duration-200"
           onClick={() => setModalItem(null)}
         >
           <div 
-            className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-zinc-950 border border-white/10 rounded-2xl overflow-hidden shadow-2xl"
+            className="relative max-w-5xl w-full max-h-[92vh] flex flex-col items-center bg-white dark:bg-zinc-950 border border-zinc-200 dark:border-white/10 rounded-2xl overflow-hidden shadow-2xl transition-colors duration-300"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="w-full flex items-center justify-between px-6 py-3.5 bg-black/50 border-b border-white/10 text-white">
-              <span className="text-xs font-mono text-emerald-400 font-bold tracking-wider">
+            <div className="w-full flex items-center justify-between px-6 py-3.5 bg-zinc-100/80 dark:bg-black/50 border-b border-zinc-200 dark:border-white/10 text-zinc-800 dark:text-white">
+              <span className="text-xs font-mono text-emerald-600 dark:text-emerald-400 font-bold tracking-wider">
                 {modalIndex + 1} / {items.length}
               </span>
               <button
                 onClick={() => setModalItem(null)}
-                className="p-2 rounded-full bg-white/10 hover:bg-white/20 text-white transition-colors"
+                className="p-2 rounded-full bg-zinc-200/80 dark:bg-white/10 hover:bg-zinc-300 dark:hover:bg-white/20 text-zinc-800 dark:text-white transition-colors"
               >
                 <X size={20} />
               </button>
             </div>
 
-            <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-black/80 overflow-hidden min-h-[350px]">
+            <div className="relative w-full flex-1 flex items-center justify-center p-4 bg-zinc-50/50 dark:bg-black/80 overflow-hidden min-h-[350px]">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
                 src={modalItem.image}
@@ -607,7 +634,7 @@ export default function DisintegratingCarousel({
                   const s = scrollRef.current;
                   s.target = prev * s.pitch;
                 }}
-                className="absolute left-4 p-3 rounded-full bg-black/70 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10"
+                className="absolute left-4 p-3 rounded-full bg-white/80 dark:bg-black/70 hover:bg-emerald-500 hover:text-black text-zinc-800 dark:text-white transition-colors border border-zinc-200 dark:border-white/10 shadow-lg"
               >
                 <ChevronLeft size={24} />
               </button>
@@ -620,7 +647,7 @@ export default function DisintegratingCarousel({
                   const s = scrollRef.current;
                   s.target = next * s.pitch;
                 }}
-                className="absolute right-4 p-3 rounded-full bg-black/70 hover:bg-emerald-500 hover:text-black text-white transition-colors border border-white/10"
+                className="absolute right-4 p-3 rounded-full bg-white/80 dark:bg-black/70 hover:bg-emerald-500 hover:text-black text-zinc-800 dark:text-white transition-colors border border-zinc-200 dark:border-white/10 shadow-lg"
               >
                 <ChevronRight size={24} />
               </button>
