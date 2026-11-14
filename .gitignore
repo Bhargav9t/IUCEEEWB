@@ -65,6 +65,8 @@ public/images/SnakeTimelineNodes/IASFaddressalevent/
 public/images/SnakeTimelineNodes/InvestitureCeremony/Investiture ceremony/
 
 # Heavy media files
+*.zip
+*.ZIP
 *.mp4
 *.MP4
 *.mov
