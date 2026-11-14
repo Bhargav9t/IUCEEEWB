@@ -12,10 +12,16 @@ import {
   ArrowLeft
 } from "lucide-react";
 import { useTheme } from "next-themes";
-import { AunsfImageItem } from "@/data/aunsfData";
+
+export interface DisintegratingCarouselItem {
+  id: string;
+  image: string;
+  title?: string;
+  subtitle?: string;
+}
 
 interface DisintegratingCarouselProps {
-  items: AunsfImageItem[];
+  items: DisintegratingCarouselItem[];
   className?: string;
   autoplayInitial?: boolean;
 }
@@ -163,7 +169,7 @@ export default function DisintegratingCarousel({
 
   const [activeIndex, setActiveIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(autoplayInitial);
-  const [modalItem, setModalItem] = useState<AunsfImageItem | null>(null);
+  const [modalItem, setModalItem] = useState<DisintegratingCarouselItem | null>(null);
   const [modalIndex, setModalIndex] = useState<number>(0);
   const [isHovered, setIsHovered] = useState(false);
 

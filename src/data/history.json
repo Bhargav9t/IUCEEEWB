@@ -219,5 +219,18 @@
       "eventname": "AUNSF 2026",
       "keyhighlights": "Showcasing student prototypes, paper defenses, and inter-chapter partnerships."
     }
+  },
+  {
+    "date": "Oct 09, 2026",
+    "eventName": "esparto:iuceeewbhitamXHHC",
+    "description": "Collaborative flagship event and youth initiative with Helping Hearts Club.",
+    "highlights": "Community outreach, student volunteering, cultural and technical activities.",
+    "outcomes": "Strengthened community ties and expanded youth participation.",
+    "type": "regular",
+    "rawObj": {
+      "date": "Oct 09, 2026",
+      "eventname": "esparto:iuceeewbhitamXHHC",
+      "keyhighlights": "Community outreach, student volunteering, cultural and technical activities."
+    }
   }
 ]

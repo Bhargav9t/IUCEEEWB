@@ -264,12 +264,23 @@ export const DEFAULT_JOURNEY_NODES: JourneyNodeData[] = [
     sort_order: 27
   },
   {
+    id: "esparto-hhc",
+    node_id: "esparto-hhc",
+    date: "OCT 09, 2026",
+    title: "esparto:iuceeewbhitamXHHC",
+    desc: "Collaborative flagship event and youth initiative with Helping Hearts Club.",
+    icon: "HeartHandshake",
+    image: "/images/events/esparto-hhc/esparto-01.jpg",
+    link: "/esparto-hhc",
+    sort_order: 28
+  },
+  {
     id: "21",
     node_id: "21",
     date: "FUTURE",
     title: "TO BE CONTINUED...",
     desc: "Our journey of impact and innovation never stops.",
     icon: "Hourglass",
-    sort_order: 28
+    sort_order: 29
   }
 ];

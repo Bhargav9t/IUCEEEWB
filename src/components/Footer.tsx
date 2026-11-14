@@ -22,8 +22,9 @@ export default function Footer() {
   const pathname = usePathname();
   const isAdmin = pathname?.startsWith("/admin");
   const isAunsf = pathname?.includes("aunsf");
+  const isEsparto = pathname?.includes("esparto");
 
-  if (isAunsf) return null;
+  if (isAunsf || isEsparto) return null;
 
   return (
     <footer className="bg-zinc-50 border-t border-zinc-200 dark:bg-[#020202] dark:border-white/10 transition-colors duration-300">
